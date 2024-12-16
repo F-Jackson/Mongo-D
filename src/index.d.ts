@@ -18,7 +18,7 @@ declare module '@fjackson/mongo-d' {
             name: string,
             schema: mongoose.Schema,
             collection?: string,
-            options?: mongoose.ModelOptions,
+            options?: any,
             __mocks?: any
         ): Promise<mongoose.Model<any>>;
     }

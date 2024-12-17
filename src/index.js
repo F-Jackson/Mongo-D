@@ -32,7 +32,7 @@ async function InitModels (
     await changeClient(client);
     
     Promise.all(
-        client.models.map(async (model) => {
+        Object.entries(client.models).map(async ([_, model]) => {
             await foreignKeyProcess(model, client, __mocks);
             await changeDrop(model, model.modelName, client);
             //await changeCreate(model, client);

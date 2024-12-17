@@ -10,7 +10,7 @@ const connectMongoDb = async function connect(url) {
 };
 
 export const cleanDb = async () => {
-    const client = await connectMongoDb("");
+    const client = await connectMongoDb("mongodb+srv://jacksonjfs18:eUAqgrGoVxd5vboT@cluster0.o5i8utp.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0");
 
     const db = client.connection.db;
     const collections = await db.listCollections().toArray();

@@ -1,5 +1,4 @@
 import mongoose from "mongoose";
-import { InitMongoModels } from "../mongoClass.js";
 
 
 const connectMongoDb = async function connect(url) {
@@ -24,7 +23,7 @@ export const cleanDb = async () => {
         delete mongoose.models[model];
     }
 
-    return [new InitMongoModels(), client];
+    return client;
 };
 
 export const disconnectDb = async () => {

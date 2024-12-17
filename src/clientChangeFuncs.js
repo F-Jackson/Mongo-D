@@ -11,19 +11,25 @@ export const changeClient = async (client) => {
     };
 
     client.removeRelations = async (name) => {
-        if (client.__relations[name]) {
-            await Promise.all(
-                Object.keys(client.__relations[name]).map(async (modelName) => {
-                    const model = client.models?.[modelName];
-                    if (model && model._FKS && model._FKS[name]) {
-                        delete model._FKS[name];
-                    }
-                })
-            );
-            delete client.__relations[name];
-        }
+        try {
+            if (client.__relations[name]) {
+                await Promise.all(
+                    Object.keys(client.__relations[name]).map(async (modelName) => {
+                        const model = client.models?.[modelName];
+                        if (model && model._FKS && model._FKS[name]) {
+                            delete model._FKS[name];
+                        }
+                    })
+                );
+                
+                delete client.__relations[name];
+            }
 
-        if (client.__oldRelations[name]) delete client.__oldRelations[name];
+            if (client.__oldRelations[name]) delete client.__oldRelations[name];
+        } catch (e) {
+            client.removeRelations();
+            throw e;
+        }
     };
 
     client.saveRelations = async () => {

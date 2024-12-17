@@ -1,6 +1,6 @@
 {
   "name": "@fjackson/mongo-d",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "An library for for link ids in mongoose",
   "main": "dist/bundle.js",
   "types": "dist/index.d.ts",

@@ -66,7 +66,7 @@ export class InitMongoModels {
         return schema;
     }
 
-    async MongoModel (
+    MongoModel (
         name,
         schema,
         collection,
@@ -75,63 +75,55 @@ export class InitMongoModels {
     ) {
         if (name in this.models) throw new Error("Model already exists");
 
-        const mongoModel = await mongoose.model(name, schema, collection, options);
+        const makeModel = async () => {
+            const mongoModel = await mongoose.model(name, schema, collection, options);
 
-        try {
-            const foreignKeyProcessor = new ForeignKeyProcessor(
-                mongoModel,
-                this
-            );
-            await foreignKeyProcessor.__mocktest(__mocks);
-            await foreignKeyProcessor.processForeignKeys();
+            try {
+                const foreignKeyProcessor = new ForeignKeyProcessor(
+                    mongoModel,
+                    this
+                );
+                await foreignKeyProcessor.__mocktest(__mocks);
+                await foreignKeyProcessor.processForeignKeys();
 
-            mongoModel.dropCollection = async () => {
-                await mongoModel.collection.drop();
-                await deleteFromMongoose(name);
+                mongoModel.dropCollection = async () => {
+                    await mongoModel.collection.drop();
+                    await deleteFromMongoose(name);
 
-                this.removeRelations(name);
-                delete this.models[name];
-            };
+                    this.removeRelations(name);
+                    delete this.models[name];
+                };
 
-            mongoModel.Create = async (doc, checkExistence = true, callback) => {
-                if (checkExistence && mongoModel._FKS) {
-                    const creator = new ForeignKeyCreator(
+                mongoModel.Create = async (doc, checkExistence = true, callback) => {
+                    if (checkExistence && mongoModel._FKS) {
+                        const creator = new ForeignKeyCreator(
+                            mongoModel, this
+                        );
+                        await creator.create(doc);
+                    }
+
+                    const models = await mongoModel.create(doc, callback);
+                    return models;
+                };
+
+                mongoModel.Delete = async (conditions, options) => {
+                    const deleter = new ForeignKeyDeleter(
                         mongoModel, this
                     );
-                    await creator.create(doc);
-                }
 
-                const models = await mongoModel.create(doc, callback);
-                return models;
-            };
+                    await deleter.delete(conditions, options);
+                };
+            
+                this.models[name] = mongoModel;
+            } catch (err) {
+                await deleteFromMongoose(name);
 
-            mongoModel.Delete = async (conditions, options) => {
-                const deleter = new ForeignKeyDeleter(
-                    mongoModel, this
-                );
+                throw err;
+            }
 
-                await deleter.delete(conditions, options);
-            };
+            return mongoModel;
+        };
 
-            mongoModel.Find = async (conditions, projection, options) => {
-                return await mongoModel.find(conditions, projection, options);
-            };
-
-            mongoModel.FindById = async (id, projection, options) => {
-                return await mongoModel.findById(id, projection, options);
-            };
-
-            mongoModel.FindOne = async (conditions, projection, options) => {
-                return await mongoModel.findOne(conditions, projection, options);
-            };
-        
-            this.models[name] = mongoModel;
-        } catch (err) {
-            await deleteFromMongoose(name);
-
-            throw err;
-        }
-
-        return mongoModel;
+        return makeModel();
     };
 }

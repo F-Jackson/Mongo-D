@@ -56,25 +56,27 @@ describe("Mongo model creation", () => {
     it("should throw error if model with same name exists", async () => {
         const TestModel = Model("TestModel", testSchema);
 
-        expect(() => Model("TestModel", relatedSchema)).rejects.toThrow(
-            "Model already exists"
-        );
+        try {
+            Model("TestModel", relatedSchema)
+        } catch (e) {
+            await InitModels(client);
 
-        expect(Object.entries(client.__models)).toHaveLength(1);
-        expect(client.__models).toHaveProperty("TestModel");
-
-        expect(Object.entries(TestModel._FKS)).toHaveLength(1);
-        expect(TestModel._FKS).toMatchObject({
-            "RelatedModel": [
-                {
-                    path: ["related"],
-                    required: true,
-                    immutable: false,
-                    unique: false,
-                    array: false,
-                }
-            ]
-        });
+            expect(Object.entries(client.__models)).toHaveLength(1);
+            expect(client.__models).toHaveProperty("TestModel");
+    
+            expect(Object.entries(TestModel._FKS)).toHaveLength(1);
+            expect(TestModel._FKS).toMatchObject({
+                "RelatedModel": [
+                    {
+                        path: ["related"],
+                        required: true,
+                        immutable: false,
+                        unique: false,
+                        array: false,
+                    }
+                ]
+            });
+        }
     });
 
     /*

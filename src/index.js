@@ -26,12 +26,13 @@ class Schema extends mongoose.Schema {
 }
 
 const Model = (name, schema, collection, options) => {
-    const model = mongoose.model(name, schema, collection, options);
     if (!mongoose.__models) {
         mongoose.__models = {};
     } else if (mongoose.__models[name]) {
         throw new Error("Model already exists");
     }
+
+    const model = mongoose.model(name, schema, collection, options);
 
     mongoose.__models[name] = model;
 

@@ -28,7 +28,8 @@ export const disconnectDb = async () => {
         delete mongoose.models[model];
     }
 
-    Object.keys(mongoose.__models).forEach((key) => {
+    Object.keys(mongoose.__models).forEach(async (key) => {
+        await mongoose.__models[key].collection.drop();
         delete mongoose.__models[key];
     });
 

@@ -69,8 +69,11 @@ async function InitModels (
     client,
     __mocks
 ) {
+    client.__relations = {};
+    client.__oldRelations = {};
+
     Promise.all(
-        mongoose.models.map(async (model) => {
+        client.models.map(async (model) => {
             await foreignKeyProcess(model, client, __mocks);
             await changeDrop(model, model.modelName, client);
             await changeCreate(model, client);

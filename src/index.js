@@ -25,14 +25,26 @@ class Schema extends mongoose.Schema {
     }
 }
 
+const Model = (name, schema, collection, options) => {
+    const model = mongoose.model(name, schema, collection, options);
+    if (!mongoose.__models) {
+        mongoose.__models = {};
+    } else if (mongoose.__models[name]) {
+        throw new Error("Model already exists");
+    }
+
+    mongoose.__models[name] = model;
+
+    return model;
+};
+
 async function InitModels (
     client,
     __mocks
 ) {
     await changeClient(client);
-    
-    Promise.all(
-        Object.entries(client.models).map(async ([_, model]) => {
+    await Promise.all(
+        Object.entries(client.__models).map(async ([_, model]) => {
             await foreignKeyProcess(model, client, __mocks);
             await changeDrop(model, model.modelName, client);
             //await changeCreate(model, client);
@@ -41,4 +53,4 @@ async function InitModels (
     );
 };
 
-export { Schema, InitModels };
+export { Schema, InitModels, Model };

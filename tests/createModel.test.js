@@ -1,7 +1,7 @@
 import { describe, it, beforeEach, expect } from "vitest";
 import mongoose from "mongoose";
 import { cleanDb, disconnectDb } from "./utils.js";
-import { InitModels, Schema } from "../src/index.js";
+import { InitModels, Model, Schema } from "../src/index.js";
 import { deleteFromMongoose } from "../src/utils.js";
 
 /***************************DROP COLLECTION IS NOT WORKING**************************************/
@@ -32,12 +32,12 @@ describe("Mongo model creation", () => {
     });
 
     it("should create a model and process foreign keys", async () => {
-        const RelatedModel = await mongoose.model("RelatedModel", relatedSchema);
-        const TestModel = await mongoose.model("TestModel", testSchema);
+        const RelatedModel = await Model("RelatedModel", relatedSchema);
+        const TestModel = await Model("TestModel", testSchema);
         await InitModels(client);
 
-        expect(mongoose.models).toHaveProperty("TestModel");
-        expect(mongoose.models).toHaveProperty("RelatedModel");
+        expect(client.__models).toHaveProperty("TestModel");
+        expect(client.__models).toHaveProperty("RelatedModel");
 
         expect(Object.entries(TestModel._FKS)).toHaveLength(1);
         expect(TestModel._FKS).toMatchObject({
@@ -52,16 +52,16 @@ describe("Mongo model creation", () => {
             ]
         });
     });
-/*
-    it("should throw error if model with same name exists", async () => {
-        const TestModel = await mongoose.model("TestModel", testSchema);
 
-        await expect(() => mongoose.model("TestModel", relatedSchema)).rejects.toThrow(
+    it("should throw error if model with same name exists", async () => {
+        const TestModel = Model("TestModel", testSchema);
+
+        expect(() => Model("TestModel", relatedSchema)).rejects.toThrow(
             "Model already exists"
         );
 
-        expect(Object.entries(mongoose.models)).toHaveLength(1);
-        expect(mongoose.models).toHaveProperty("TestModel");
+        expect(Object.entries(client.__models)).toHaveLength(1);
+        expect(client.__models).toHaveProperty("TestModel");
 
         expect(Object.entries(TestModel._FKS)).toHaveLength(1);
         expect(TestModel._FKS).toMatchObject({
@@ -77,6 +77,7 @@ describe("Mongo model creation", () => {
         });
     });
 
+    /*
     it("should handle models with no foreign keys", async () => {
         const simpleSchema = new Schema({
             simpleField: { type: String, required: true },

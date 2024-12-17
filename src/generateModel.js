@@ -68,8 +68,7 @@ export class ForeignKeyProcessor {
     _populateForeignKeyMetadata = async () => {
         const activeForeignKeys = Object.entries(this.activeForeignKeys);
         if (activeForeignKeys.length > 0) {
-            this.mongoModel._FKS = this.activeForeignKeys;
-
+            this.mongoModel["_FKS"] = this.activeForeignKeys;
             const modelName = this.mongoModel.modelName;
 
             try {

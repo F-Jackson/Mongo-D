@@ -12,7 +12,11 @@ const connectMongoDb = async function connect(url) {
 export const cleanDb = async () => {
     const client = await connectMongoDb("mongodb+srv://jacksonjfs18:eUAqgrGoVxd5vboT@cluster0.o5i8utp.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0");
 
-    const db = client.connection.db;
+    return client;
+};
+
+export const disconnectDb = async () => {
+    const db = mongoose.connection.db;
     const collections = await db.listCollections().toArray();
     const dropPromises = collections.map(async (collection) => {
         await db.dropCollection(collection.name)
@@ -23,9 +27,8 @@ export const cleanDb = async () => {
         delete mongoose.models[model];
     }
 
-    return client;
-};
-
-export const disconnectDb = async () => {
+    Object.keys(mongoose.__models).forEach((key) => {
+        delete mongoose.__models[key];
+    });
     await mongoose.disconnect();
 };

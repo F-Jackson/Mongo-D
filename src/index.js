@@ -30,15 +30,15 @@ async function InitModels (
     __mocks
 ) {
     await changeClient(client);
-    /*
+    
     Promise.all(
         client.models.map(async (model) => {
             await foreignKeyProcess(model, client, __mocks);
             await changeDrop(model, model.modelName, client);
-            await changeCreate(model, client);
-            await changeDelete(model, client);
+            //await changeCreate(model, client);
+            //await changeDelete(model, client);
         })
-    );*/
+    );
 };
 
 export { Schema, InitModels };

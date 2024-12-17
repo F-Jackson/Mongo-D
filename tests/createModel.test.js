@@ -28,7 +28,7 @@ describe("Mongo model creation", () => {
     });
 
     afterEach(async () => {
-        await disconnectDb();
+        await disconnectDb(client);
     });
 
     it("should create a model and process foreign keys", async () => {

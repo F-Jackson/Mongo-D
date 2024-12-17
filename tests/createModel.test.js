@@ -79,19 +79,19 @@ describe("Mongo model creation", () => {
         }
     });
 
-    /*
     it("should handle models with no foreign keys", async () => {
         const simpleSchema = new Schema({
             simpleField: { type: String, required: true },
         });
 
-        const SimpleModel = await mongoose.model("SimpleModel", simpleSchema);
+        const SimpleModel = Model("SimpleModel", simpleSchema);
 
-        expect(Object.entries(mongoose.models)).toHaveLength(1);
-        expect(mongoose.models).toHaveProperty("SimpleModel");
+        expect(Object.entries(mongoose.__models)).toHaveLength(1);
+        expect(mongoose.__models).toHaveProperty("SimpleModel");
 
         expect(SimpleModel).not.toHaveProperty("_FKS");
     });
+
 
     it("should support multiple foreign keys in a single model", async () => {
         const multiFKSchema = new Schema({
@@ -131,6 +131,7 @@ describe("Mongo model creation", () => {
         });
     });
 
+    /*
     it("should handle deletion of foreign key metadata when model is removed", async () => {
         const TestModel = await mongoose.model("TestModel", relatedSchema);
         await TestModel.create({title: "test"});

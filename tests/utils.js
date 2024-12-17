@@ -24,11 +24,16 @@ export const disconnectDb = async () => {
     await Promise.all(dropPromises);
 
     for (let model in mongoose.models) {
+        mongoose.deleteModel(model);
         delete mongoose.models[model];
     }
 
     Object.keys(mongoose.__models).forEach((key) => {
         delete mongoose.__models[key];
     });
+
+    mongoose.models = {};
+    mongoose.modelSchemas = {};
+
     await mongoose.disconnect();
 };

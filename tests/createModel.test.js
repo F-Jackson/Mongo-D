@@ -514,7 +514,6 @@ describe("Mongo model creation", () => {
         try{
             const RelatedModel = Model("RelatedModel", relatedSchema);
             await InitModels(client);
-            console.log(client.__sincedModels);
 
             expect(Object.entries(mongoose.__models)).toHaveLength(1);
 
@@ -536,20 +535,17 @@ describe("Mongo model creation", () => {
         }
     });
 
-    /*
     it("should handle populateForeignKeyMetadata error", async () => {
         const RelatedModel = Model("RelatedModel", relatedSchema);
+        await InitModels(client);
 
         try{
-            const TestModel = Model(
-                "TestModel", testSchema, undefined, undefined, 
-                {
-                    "_populateForeignKeyMetadata": async () => {
-            
-                        throw new Error("Mocked error")
-                    }
+            const TestModel = Model("TestModel", testSchema);
+            await InitModels(client, {
+                "_populateForeignKeyMetadata": async () => {
+                    throw new Error("Mocked error")
                 }
-            );
+            });
 
             expect(true).toBe(false);
         } catch (e) {
@@ -560,6 +556,8 @@ describe("Mongo model creation", () => {
             expect(mongoose.__models).toHaveProperty("RelatedModel");
 
             const TestModel = Model("TestModel", testSchema);
+            await InitModels(client);
+
             expect(Object.entries(mongoose.__models)).toHaveLength(2);
             expect(Object.entries(mongoose.__models)).toHaveLength(2);
             expect(mongoose.__models).toHaveProperty("TestModel");
@@ -579,86 +577,4 @@ describe("Mongo model creation", () => {
             });
         }
     });
-
-    it("should handle collection drop data inside db", async () => {
-        const RelatedModel = Model("RelatedModel", relatedSchema);
-        await RelatedModel.create({
-            title: "test"
-        });
-
-        expect((await RelatedModel.find({}))).toHaveLength(1);
-
-        let db = client.connection.db;
-        let collections = await db.listCollections().toArray();
-        expect(collections.map(col => col.name)).toHaveLength(1);
-        expect(collections.map(col => col.name)).toContain("relatedmodels");
-
-        await RelatedModel.dropCollection();
-
-        db = client.connection.db;
-        collections = await db.listCollections().toArray();
-        expect(collections.map(col => col.name)).toHaveLength(0);
-        expect(collections.map(col => col.name)).not.toContain("relatedmodels");
-
-        const RelatedModel2 = Model("RelatedModel", relatedSchema);
-        expect((await RelatedModel2.find({}))).toHaveLength(0);
-
-        await RelatedModel2.create({
-            title: "test"
-        });
-        expect((await RelatedModel2.find({}))).toHaveLength(1);
-        
-        db = client.connection.db;
-        collections = await db.listCollections().toArray();
-        expect(collections.map(col => col.name)).toHaveLength(1);
-        expect(collections.map(col => col.name)).toContain("relatedmodels");
-    });
-
-    it("should handle erro data inside db", async () => {
-        const RelatedModel = Model("RelatedModel", relatedSchema);
-        await RelatedModel.create({
-            title: "test"
-        });
-        expect((await RelatedModel.find({}))).toHaveLength(1);
-
-        let db = client.connection.db;
-        let collections = await db.listCollections().toArray();
-        expect(collections.map(col => col.name)).toHaveLength(1);
-        expect(collections.map(col => col.name)).toContain("relatedmodels");
-
-        await deleteFromMongoose("RelatedModel");
-        delete mongoose.__models["RelatedModel"];
-
-        db = client.connection.db;
-        collections = await db.listCollections().toArray();
-        expect(collections.map(col => col.name)).toHaveLength(1);
-        expect(collections.map(col => col.name)).toContain("relatedmodels");
-
-        const RelatedModel2 = Model("RelatedModel", new Schema({
-            title: { type: String, required: true },
-            name: String
-        }));
-        await RelatedModel2.create({
-            title: "test",
-            name: "test"
-        });
-
-        const models = await RelatedModel2.find({});
-
-        expect(models).toHaveLength(2);
-        
-        db = client.connection.db;
-        collections = await db.listCollections().toArray();
-        expect(collections.map(col => col.name)).toHaveLength(1);
-        expect(collections.map(col => col.name)).toContain("relatedmodels");
-        expect(models).toMatchObject([
-            {
-                title: 'test',
-            },
-            {
-                title: 'test',
-                name: 'test',
-            }
-        ]);
-    });*/
 }, 0);

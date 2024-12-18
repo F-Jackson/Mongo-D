@@ -18,16 +18,6 @@ export const foreignKeyProcess = async(mongoModel, mongoD, __mocks) => {
     }
 };
 
-export const changeDrop = async(mongoModel, name, mongoD) => {
-    mongoModel.dropCollection = async () => {
-        await mongoModel.collection.drop();
-        await deleteFromMongoose(name);
-
-        await mongoD.removeRelations(name);
-        delete mongoD.__models[name];
-    };
-};
-
 export const changeCreate = async(mongoModel, mongoD) => {
     mongoModel.Create = async (doc, checkExistence, callback) => {
         if (checkExistence && mongoModel._FKS) {

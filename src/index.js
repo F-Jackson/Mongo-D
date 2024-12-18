@@ -1,8 +1,7 @@
 import mongoose from "mongoose";
 import { 
     changeCreate, 
-    changeDelete, 
-    changeDrop, 
+    changeDelete,
     foreignKeyProcess 
 } from "./modelChangeFuncs";
 import { changeClient } from "./clientChangeFuncs";
@@ -53,7 +52,6 @@ async function InitModels (
     await Promise.all(
         Object.entries(client.__models).map(async ([_, model]) => {
             await foreignKeyProcess(model, client, __mocks);
-            await changeDrop(model, model.modelName, client);
             //await changeCreate(model, client);
             //await changeDelete(model, client);
         })

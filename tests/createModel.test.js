@@ -544,16 +544,6 @@ describe("Mongo model creation", () => {
         expect(RelatedModel).not.toHaveProperty("_FKS");
     });
 
-    it("should delete all cache after collection drop", async () => {
-        const TestModel = Model("TestModel", testSchema);
-        await InitModels(client);
-        
-        await TestModel.dropCollection();
-
-        expect(Object.entries(mongoose.__models)).toHaveLength(0);
-        expect(Object.entries(mongoose.__relations)).toHaveLength(0);
-    });
-
     /*
     it("should handle getActivate error", async () => {
         const RelatedModel = Model("RelatedModel", relatedSchema);

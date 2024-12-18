@@ -93,23 +93,25 @@ describe("Mongo instance creation", () => {
             }
         ]);        
     });
-/*
+
     it("should create array fk", async () => {
-        testSchema = mongoD.NewSchema({
+        testSchema = new Schema({
             title: { type: String, required: true },
             related: {
-                type: [ mongoD.Schema.Types.ObjectId ],
+                type: [ mongoose.Schema.Types.ObjectId ],
                 ref: "RelatedModel",
                 required: true,
                 immutable: true
             },
         });
-        relatedSchema = mongoD.NewSchema({
+        relatedSchema = new Schema({
             title: { type: String, required: true },
         });
 
-        const TestModel = await mongoD.MongoModel("TestModel", testSchema);
-        const RelatedModel = await mongoD.MongoModel("RelatedModel", relatedSchema);
+        const TestModel = Model("TestModel", testSchema);
+        const RelatedModel = Model("RelatedModel", relatedSchema);
+
+        await InitModels(client);
 
         const related = await RelatedModel.Create({ title: "Related" });
         const related2 = await RelatedModel.Create({ title: "Related2" });
@@ -160,29 +162,31 @@ describe("Mongo instance creation", () => {
     });
 
     it("should error create fk with fake id", async () => {
-        testSchema = mongoD.NewSchema({
+        testSchema = new Schema({
             title: { type: String, required: true },
             related: {
-                type: mongoD.Schema.Types.ObjectId,
+                type: mongoose.Schema.Types.ObjectId,
                 ref: "RelatedModel",
                 required: true,
                 immutable: true
             },
             ui: {
                 related2: {
-                    type: mongoD.Schema.Types.ObjectId,
+                    type: mongoose.Schema.Types.ObjectId,
                     ref: "RelatedModel",
                     required: true,
                     immutable: true
                 }
             },
         });
-        relatedSchema = mongoD.NewSchema({
+        relatedSchema = new Schema({
             title: { type: String, required: true },
         });
 
-        const TestModel = await mongoD.MongoModel("TestModel", testSchema);
-        const RelatedModel = await mongoD.MongoModel("RelatedModel", relatedSchema);
+        const TestModel = Model("TestModel", testSchema);
+        const RelatedModel = Model("RelatedModel", relatedSchema);
+
+        await InitModels(client);
 
         const related = await RelatedModel.Create({ title: "Related" });
         const related2 = await RelatedModel.Create({ title: "Related2" });
@@ -216,21 +220,23 @@ describe("Mongo instance creation", () => {
     });
 
     it("should error create array fk", async () => {
-        testSchema = mongoD.NewSchema({
+        testSchema = new Schema({
             title: { type: String, required: true },
             related: {
-                type: [ mongoD.Schema.Types.ObjectId ],
+                type: [ mongoose.Schema.Types.ObjectId ],
                 ref: "RelatedModel",
                 required: true,
                 immutable: true
             },
         });
-        relatedSchema = mongoD.NewSchema({
+        relatedSchema = new Schema({
             title: { type: String, required: true },
         });
 
-        const TestModel = await mongoD.MongoModel("TestModel", testSchema);
-        const RelatedModel = await mongoD.MongoModel("RelatedModel", relatedSchema);
+        const TestModel = Model("TestModel", testSchema);
+        const RelatedModel = Model("RelatedModel", relatedSchema);
+
+        await InitModels(client);
 
         const related = await RelatedModel.Create({ title: "Related" });
         const related2 = await RelatedModel.Create({ title: "Related2" });
@@ -252,10 +258,10 @@ describe("Mongo instance creation", () => {
             error = err;
         }
     
-        expect(error).toBeDefined();
-        expect(error.message).toMatch(/Cannot find all linked IDs in model/i);
-
         const testes = await TestModel.find({});
-        expect(testes).toHaveLength(0);    
-    });*/
+        expect(testes).toHaveLength(0);   
+
+        expect(error).toBeDefined();
+        expect(error.message).toMatch(/Cannot find all linked IDs in model/i); 
+    });
 });

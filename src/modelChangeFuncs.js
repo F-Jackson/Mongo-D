@@ -21,7 +21,7 @@ export const foreignKeyProcess = async(mongoModel, mongoD, __mocks) => {
 };
 
 export const changeCreate = async(mongoModel, mongoD) => {
-    mongoModel.Create = async (doc, checkExistence, callback) => {
+    mongoModel.Create = async (doc, checkExistence = true, callback) => {
         if (checkExistence && mongoModel._FKS) {
             const creator = new ForeignKeyCreator(
                 mongoModel, mongoD

@@ -19,7 +19,7 @@ export const changeDrop = async(mongoModel, name, mongoD) => {
         await deleteFromMongoose(name);
 
         mongoD.removeRelations(name);
-        delete mongoD.models[name];
+        delete mongoD.__models[name];
     };
 };
 

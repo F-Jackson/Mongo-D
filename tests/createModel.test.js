@@ -187,6 +187,8 @@ describe("Mongo model creation", () => {
                 "nestedField.ll.h",
                 "nestedField2.po2.subField",
                 "nestedField2.po2.arrayTest",
+                "nestedField",
+                "nestedField2",
                 "lo",
                 "_id",
                 "__v"
@@ -211,8 +213,7 @@ describe("Mongo model creation", () => {
     });
 
     it("should isolate process paths in schema", async () => {
-        const concurrentSchemaCreations = Promise.all([
-            new Schema({
+        const nestedSchema = new Schema({
                 nestedField: {
                     subField: {
                         type: mongoose.Schema.Types.ObjectId,
@@ -239,13 +240,10 @@ describe("Mongo model creation", () => {
                     },
                 },
                 lo: [String],
-            }),
-            new Schema({
+        });
+        const nestedSchema2 = new Schema({
                 isolated: [String],
-            }),
-        ]);
-    
-        const [nestedSchema, nestedSchema2] = await concurrentSchemaCreations;
+        });
 
         expect(nestedSchema).toHaveProperty("__properties");
         const propertiesKeys = Object.entries(nestedSchema.__properties).map(([key, _]) => key);

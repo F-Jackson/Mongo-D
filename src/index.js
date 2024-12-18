@@ -47,8 +47,10 @@ const Model = (name, schema, collection, options) => {
 async function InitModels (
     client
 ) {
+    if (!client) throw new Error("Need to pass mongoose client");
+
     await changeClient(client);
-    await Promise.all(
+/*    await Promise.all(
         Object.entries(client.__models).map(async ([_, model]) => {
             if (client.__sincedModels.has(model.modelName)) return;
 
@@ -57,7 +59,7 @@ async function InitModels (
             await changeCreate(model, client);
             await changeDelete(model, client);
         })
-    );
+    );*/
 };
 
 export { Schema, InitModels, Model };

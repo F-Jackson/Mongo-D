@@ -53,7 +53,6 @@ describe("Mongo model Delete", () => {
         expect(relateds).toHaveLength(0);
     }, 0);
 
-    /*
     it("should nested delete with required", async () => {
         const relatedSchema = new Schema({
             title: { type: String, required: true },
@@ -614,5 +613,5 @@ describe("Mongo model Delete", () => {
 
         const relateds = await RelatedModel.find({});
         expect(relateds).toHaveLength(2);
-    }, 0);*/
+    }, 0);
 }, 0);

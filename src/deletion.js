@@ -5,7 +5,7 @@ export class ForeignKeyDeleter {
         this.mongoD = mongoD;
     }
 
-    async getFilterConditionsAndPaths(
+    async _getFilterConditionsAndPaths(
         models, 
         foreignKeys
     ) {
@@ -34,7 +34,7 @@ export class ForeignKeyDeleter {
         return { filterConditions, updatePaths, isRequired, isImmutable, isArray };
     }
 
-    async handleRequiredOrImmutableRecords(
+    async _handleRequiredOrImmutableRecords(
         model, 
         filterConditions, 
         relatedRecords, 
@@ -56,7 +56,7 @@ export class ForeignKeyDeleter {
         }
     }
 
-    async handleArrayRecords(
+    async _handleArrayRecords(
         model, 
         filterConditions, 
         relatedRecords
@@ -87,28 +87,28 @@ export class ForeignKeyDeleter {
         return await model.bulkWrite(updateFilters);
     }
 
-    async processSingleRelation(
+    async _processSingleRelation(
         relatedModelName, 
         foreignKeys, 
         models, 
         dealWithImmutable
     ) {
-        const relatedModel = this.mongoD.models[relatedModelName];
+        const relatedModel = this.mongoD.__models[relatedModelName];
         if (!relatedModel._FKS) return;
 
         const { filterConditions, updatePaths, isRequired, isImmutable, isArray } =
-            await this.getFilterConditionsAndPaths(models, foreignKeys);
+            await this._getFilterConditionsAndPaths(models, foreignKeys);
 
         const relatedRecords = await relatedModel.find(filterConditions);
         
         if (isArray) {
-            return this.handleArrayRecords(
+            return this._handleArrayRecords(
                 relatedModel,
                 filterConditions,
                 relatedRecords
             );
         } else {
-            return this.handleRequiredOrImmutableRecords(
+            return this._handleRequiredOrImmutableRecords(
                 relatedModel,
                 updatePaths,
                 relatedRecords,
@@ -119,13 +119,13 @@ export class ForeignKeyDeleter {
         }
     }
 
-    async processRelations(
+    async _processRelations(
         relations, 
         models, 
         dealWithImmutable
     ) {
         const promises = Object.entries(relations).map(([relatedModelName, foreignKeys]) => {
-            return this.processSingleRelation(relatedModelName, foreignKeys, models, dealWithImmutable);
+            return this._processSingleRelation(relatedModelName, foreignKeys, models, dealWithImmutable);
         });
 
         await Promise.all(promises);
@@ -140,7 +140,7 @@ export class ForeignKeyDeleter {
 
         if (!models.length) return;
 
-        await this.processRelations(relations, models, dealWithImmutable);
+        await this._processRelations(relations, models, dealWithImmutable);
 
         await this.mongoModel.deleteMany(conditions);
     }

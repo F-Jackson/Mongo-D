@@ -10,7 +10,12 @@ export const foreignKeyProcess = async(mongoModel, mongoD, __mocks) => {
         mongoD
     );
     await foreignKeyProcessor.__mocktest(__mocks);
-    await foreignKeyProcessor.processForeignKeys();
+    try {
+        await foreignKeyProcessor.processForeignKeys();
+    } catch (e) {
+        await deleteFromMongoose(mongoModel.modelName);
+        throw e;
+    }
 };
 
 export const changeDrop = async(mongoModel, name, mongoD) => {

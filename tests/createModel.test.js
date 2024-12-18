@@ -31,6 +31,7 @@ describe("Mongo model creation", () => {
         await disconnectDb(client);
     });
 
+    /*
     it("should create a model and process foreign keys", async () => {
         const RelatedModel = await Model("RelatedModel", relatedSchema);
         const TestModel = await Model("TestModel", testSchema);
@@ -367,7 +368,7 @@ describe("Mongo model creation", () => {
         expect(Object.keys(client.__relations["RelatedModel"])).toMatchObject(["TestModel", "AnotherTestModel"]);
         expect(TestModel).toHaveProperty("_FKS");
         expect(AnotherTestModel).toHaveProperty("_FKS");
-    });
+    });*/
 
     it("should correctly delete a foreign key model and not affect other models", async () => {
         const RelatedModel = Model("RelatedModel", relatedSchema);

@@ -513,6 +513,8 @@ describe("Mongo model creation", () => {
         try{
             const RelatedModel = Model("RelatedModel", relatedSchema);
             await InitModels(client);
+            console.log(client.__sincedModels);
+
             expect(Object.entries(mongoose.__models)).toHaveLength(1);
 
             const TestModel = Model(

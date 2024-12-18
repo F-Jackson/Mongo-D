@@ -15,7 +15,6 @@ export const foreignKeyProcess = async(mongoModel, mongoD, __mocks) => {
     try {
         await foreignKeyProcessor.processForeignKeys();
     } catch (e) {
-        console.log(mongoD.__models)
         await deleteFromMongoose(mongoModel.modelName);
         throw e;
     }

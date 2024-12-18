@@ -471,7 +471,6 @@ describe("Mongo model creation", () => {
 
             expect(true).toBe(false);
         } catch (error) {
-            console.log(mongoose.__models);
             expect(Object.entries(mongoose.__models)).toHaveLength(1);
             expect(Object.entries(client.__relations)).toHaveLength(1);
 

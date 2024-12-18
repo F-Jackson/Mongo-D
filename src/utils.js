@@ -5,7 +5,7 @@ export const deleteFromMongoose = async(name) => {
     delete mongoose.models[name];
     delete mongoose.connection.models[name];
     delete mongoose.__models[name];
-    delete mongoose.__relations[name];
+    await mongoose.removeRelations(name);
 }
 
 export const getNestedProperty = async(obj, path) => {

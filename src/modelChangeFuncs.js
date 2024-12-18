@@ -9,10 +9,13 @@ export const foreignKeyProcess = async(mongoModel, mongoD, __mocks) => {
         mongoModel,
         mongoD
     );
+    
     await foreignKeyProcessor.__mocktest(__mocks);
+
     try {
         await foreignKeyProcessor.processForeignKeys();
     } catch (e) {
+        console.log(mongoD.__models)
         await deleteFromMongoose(mongoModel.modelName);
         throw e;
     }

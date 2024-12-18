@@ -1,10 +1,8 @@
 export class ForeignKeyProcessor {
-    constructor(mongoModel, mongoD, __mocks) {
+    constructor(mongoModel, mongoD) {
         this.mongoModel = mongoModel;
         this.mongoD = mongoD;
         this.activeForeignKeys = {};
-
-        this.__mocktest(__mocks);
     }
 
     __mocktest = (mocks) => {

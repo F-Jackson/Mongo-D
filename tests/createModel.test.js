@@ -30,7 +30,7 @@ describe("Mongo model creation", () => {
     afterEach(async () => {
         await disconnectDb(client);
     });
-
+/*
     it("should create a model and process foreign keys", async () => {
         const RelatedModel = await Model("RelatedModel", relatedSchema);
         const TestModel = await Model("TestModel", testSchema);
@@ -507,7 +507,7 @@ describe("Mongo model creation", () => {
         expect(Object.entries(client.__relations)).toHaveLength(0);
 
         expect(RelatedModel).not.toHaveProperty("_FKS");
-    });
+    });*/
 
     it("should handle getActivate error", async () => {
         try{

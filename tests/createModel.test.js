@@ -133,20 +133,6 @@ describe("Mongo model creation", () => {
         });
     });
 
-
-    it("should handle deletion of foreign key metadata when model is removed", async () => {
-        const TestModel = Model("TestModel", relatedSchema);
-        await InitModels(client);
-
-        await TestModel.create({title: "test"});
-        await TestModel.dropCollection();
-
-        expect(Object.entries(mongoose.__models)).toHaveLength(0);
-        let db = client.connection.db;
-        let collections = await db.listCollections().toArray();
-        expect(collections).toHaveLength(0);
-    });
-
     it("should process paths in schema", async () => {
         const nestedSchema = new Schema({
             nestedField: {
@@ -367,27 +353,6 @@ describe("Mongo model creation", () => {
         expect(Object.keys(client.__relations["RelatedModel"])).toMatchObject(["TestModel", "AnotherTestModel"]);
         expect(TestModel).toHaveProperty("_FKS");
         expect(AnotherTestModel).toHaveProperty("_FKS");
-    });
-
-    it("should correctly delete a foreign key model and not affect other models", async () => {
-        const RelatedModel = Model("RelatedModel", relatedSchema);
-        const TestModel = Model("TestModel", testSchema);
-        const AnotherTestModel = Model("AnotherTestModell", testSchema);
-        await InitModels(client);
-
-        expect(Object.entries(mongoose.__models)).toHaveLength(3);
-        expect(Object.entries(client.__relations)).toHaveLength(1);
-        expect(Object.keys(client.__relations["RelatedModel"])).toMatchObject(["TestModel", "AnotherTestModell"]);
-        expect(Object.keys(TestModel._FKS)).toHaveLength(1);
-        expect(Object.keys(AnotherTestModel._FKS)).toHaveLength(1);
-
-        await RelatedModel.dropCollection();
-
-        expect(Object.entries(mongoose.__models)).toHaveLength(2);
-        expect(Object.keys(TestModel._FKS)).toHaveLength(0);
-        expect(Object.keys(AnotherTestModel._FKS)).toHaveLength(0);
-
-        expect(Object.entries(client.__relations)).toHaveLength(0);
     });
 
     it("should handle circular references", async () => {

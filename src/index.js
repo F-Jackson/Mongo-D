@@ -45,8 +45,7 @@ const Model = (name, schema, collection, options) => {
 };
 
 async function InitModels (
-    client,
-    __mocks
+    client
 ) {
     await changeClient(client);
     await Promise.all(
@@ -54,7 +53,7 @@ async function InitModels (
             if (client.__sincedModels.has(model.modelName)) return;
 
             client.__sincedModels.add(model.modelName); 
-            await foreignKeyProcess(model, client, __mocks);
+            await foreignKeyProcess(model, client);
             await changeCreate(model, client);
             await changeDelete(model, client);
         })

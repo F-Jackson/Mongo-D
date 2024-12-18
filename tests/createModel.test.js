@@ -463,16 +463,17 @@ describe("Mongo model creation", () => {
             },
         });
 
-        Model("ModelWithObjectIdFK", schemaWithObjectIdFK);
-        await InitModels(client);
-
         try {
+            Model("ModelWithObjectIdFK", schemaWithObjectIdFK);
             Model("ModelWithEmbeddedDocFK", schemaWithEmbeddedDocFK);
+
+            await InitModels(client);
 
             expect(true).toBe(false);
         } catch (error) {
             expect(Object.entries(mongoose.__models)).toHaveLength(1);
             expect(Object.entries(client.__relations)).toHaveLength(1);
+            expect(Object.entries(client.__relations["RelatedModel"])).toHaveLength(1);
 
             const schemaWithEmbeddedDocFKUnlinked = new Schema({
                 related: {
@@ -483,10 +484,13 @@ describe("Mongo model creation", () => {
             });
 
             Model("ModelWithEmbeddedDocFKUnlinked", schemaWithEmbeddedDocFKUnlinked);
+            Model("ModelWithObjectIdFK2", schemaWithObjectIdFK);
+
             await InitModels(client);
 
-            expect(Object.entries(mongoose.__models)).toHaveLength(2);
+            expect(Object.entries(mongoose.__models)).toHaveLength(3);
             expect(Object.entries(client.__relations)).toHaveLength(1);
+            expect(Object.entries(client.__relations["RelatedModel"])).toHaveLength(2);
         }
     });    
 

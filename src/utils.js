@@ -5,6 +5,7 @@ export const deleteFromMongoose = async(name) => {
     delete mongoose.models[name];
     delete mongoose.connection.models[name];
     delete mongoose.__models[name];
+    if (mongoose.__sincedModels.has(name)) mongoose.__sincedModels.delete(name);
     await mongoose.removeRelations(name);
 }
 

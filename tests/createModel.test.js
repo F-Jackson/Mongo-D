@@ -512,17 +512,17 @@ describe("Mongo model creation", () => {
     it("should handle getActivate error", async () => {
         try{
             const RelatedModel = Model("RelatedModel", relatedSchema);
+            await InitModels(client);
+
             const TestModel = Model(
-                "TestModel", testSchema, undefined, undefined, 
-                {
-                    "_getActiveForeignKeys": async () => {
-            
-                        throw new Error("Mocked error")
-                    }
-                }
+                "TestModel", testSchema, undefined, undefined,
             );
 
-            await InitModels(client);
+            await InitModels(client, {
+                "_getActiveForeignKeys": async () => {
+                    throw new Error("Mocked error")
+                }
+            });
 
             expect(true).toBe(false);
         } catch (e) {

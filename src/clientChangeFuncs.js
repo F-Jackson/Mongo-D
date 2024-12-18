@@ -1,6 +1,7 @@
 export const changeClient = async (client) => {
     client.__relations = {};
     client.__oldRelations = {};
+    client.__sincedModels = new Set();
 
     client.addRelations = async (fks, modelName) => {
         fks.forEach(([name, fk]) => {

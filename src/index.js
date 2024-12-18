@@ -51,6 +51,9 @@ async function InitModels (
     await changeClient(client);
     await Promise.all(
         Object.entries(client.__models).map(async ([_, model]) => {
+            if (client.__sinceModels.has(model.modelName)) return;
+
+            client.__sinceModels.add(model.modelName); 
             await foreignKeyProcess(model, client, __mocks);
             //await changeCreate(model, client);
             //await changeDelete(model, client);

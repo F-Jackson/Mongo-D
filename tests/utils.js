@@ -36,6 +36,7 @@ export const disconnectDb = async (client) => {
     client.connection.collections = {};
     client.__relations = {};
     client.__models = {};
+    client.__sincedModels = new Set();
     client.models = {};
 
     await client.disconnect();

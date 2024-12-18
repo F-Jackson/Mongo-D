@@ -135,7 +135,7 @@ export class ForeignKeyDeleter {
         conditions, 
         dealWithImmutable = "delete"
     ) {
-        const relations = this.mongoD.relations[this.modelName];
+        const relations = this.mongoD.__relations[this.modelName];
         const models = await this.mongoModel.find(conditions);
 
         if (!models.length) return;

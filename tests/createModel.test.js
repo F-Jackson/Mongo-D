@@ -513,6 +513,7 @@ describe("Mongo model creation", () => {
         try{
             const RelatedModel = Model("RelatedModel", relatedSchema);
             await InitModels(client);
+            expect(Object.entries(mongoose.__models)).toHaveLength(1);
 
             const TestModel = Model(
                 "TestModel", testSchema, undefined, undefined,

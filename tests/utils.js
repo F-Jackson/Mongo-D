@@ -27,9 +27,11 @@ export const disconnectDb = async (client) => {
         client.deleteModel(model);
     }
 
-    Object.keys(client.__models).forEach(async (key) => {
-        await client.__models[key].collection.drop();
-    });
+    if (client.__models) {
+        Object.keys(client.__models).forEach(async (key) => {
+            await client.__models[key].collection.drop();
+        });
+    }
 
     client.connection.models = {}; 
     client.connection.modelSchemas = {}; 

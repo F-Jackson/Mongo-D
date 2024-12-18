@@ -21,13 +21,13 @@ export const changeClient = async (client) => {
                         }
                     })
                 );
-                
+
                 delete client.__relations[name];
             }
 
             if (client.__oldRelations[name]) delete client.__oldRelations[name];
         } catch (e) {
-            client.removeRelations();
+            client.resetRelations();
             throw e;
         }
     };

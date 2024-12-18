@@ -2,9 +2,7 @@ import { describe, it, beforeEach, expect } from "vitest";
 import mongoose from "mongoose";
 import { cleanDb, disconnectDb } from "./utils.js";
 import { InitModels, Model, Schema } from "../src/index.js";
-import { deleteFromMongoose } from "../src/utils.js";
 
-/***************************DROP COLLECTION IS NOT WORKING**************************************/
 
 describe("Mongo model creation", () => {
     let testSchema;

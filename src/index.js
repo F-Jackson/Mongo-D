@@ -56,7 +56,7 @@ async function InitModels (
             client.__sincedModels.add(model.modelName); 
             await foreignKeyProcess(model, client, __mocks);
             await changeCreate(model, client);
-            //await changeDelete(model, client);
+            await changeDelete(model, client);
         })
     );
 };

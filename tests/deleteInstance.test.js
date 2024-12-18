@@ -1,32 +1,36 @@
 import { describe, it, beforeEach, expect } from "vitest";
 import { cleanDb, disconnectDb } from "./utils.js";
+import { InitModels, Model, Schema } from "../src/index.js";
+import mongoose from "mongoose";
 
 describe("Mongo model Delete", () => {
-    let mongoD;
+    let client;
 
     beforeEach(async () => {
-        [mongoD] = await cleanDb();
+        client = await cleanDb();
     }, 0);
 
     afterEach(async () => {
-        await disconnectDb();
+        await disconnectDb(client);
     }, 0);
 
     it("should delete with required", async () => {
-        const relatedSchema = mongoD.NewSchema({
+        const relatedSchema = new Schema({
             title: { type: String, required: true },
         });
-        const testSchema = mongoD.NewSchema({
+        const testSchema = new Schema({
             name: { type: String, required: true },
             related: {
-                type: mongoD.Schema.Types.ObjectId,
+                type: mongoose.Schema.Types.ObjectId,
                 ref: "RelatedModel",
                 required: true,
             },
         });
 
-        const RelatedModel = await mongoD.MongoModel("RelatedModel", relatedSchema);
-        const TestModel = await mongoD.MongoModel("TestModel", testSchema);
+        const RelatedModel = Model("RelatedModel", relatedSchema);
+        const TestModel = Model("TestModel", testSchema);
+
+        await InitModels(client);
 
         const related = await RelatedModel.Create({ title: "Related" });
         const tests = await TestModel.Create([
@@ -50,22 +54,24 @@ describe("Mongo model Delete", () => {
     }, 0);
 
     it("should nested delete with required", async () => {
-        const relatedSchema = mongoD.NewSchema({
+        const relatedSchema = new Schema({
             title: { type: String, required: true },
         });
-        const testSchema = mongoD.NewSchema({
+        const testSchema = new Schema({
             name: { type: String, required: true },
             nested: {
                 related: {
-                    type: mongoD.Schema.Types.ObjectId,
+                    type: mongoose.Schema.Types.ObjectId,
                     ref: "RelatedModel",
                     required: true,
                 }
             },
         });
 
-        const RelatedModel = await mongoD.MongoModel("RelatedModel", relatedSchema);
-        const TestModel = await mongoD.MongoModel("TestModel", testSchema);
+        const RelatedModel = Model("RelatedModel", relatedSchema);
+        const TestModel = Model("TestModel", testSchema);
+
+        await InitModels(client);
 
         const related = await RelatedModel.Create({ title: "Related" });
         const tests = await TestModel.Create([
@@ -93,20 +99,22 @@ describe("Mongo model Delete", () => {
     }, 0);
 
     it("should array delete with required", async () => {
-        const relatedSchema = mongoD.NewSchema({
+        const relatedSchema = new Schema({
             title: { type: String, required: true },
         });
-        const testSchema = mongoD.NewSchema({
+        const testSchema = new Schema({
             name: { type: String, required: true },
             related: {
-                type: [ mongoD.Schema.Types.ObjectId ],
+                type: [ mongoose.Schema.Types.ObjectId ],
                 ref: "RelatedModel",
                 required: true,
             },
         });
 
-        const RelatedModel = await mongoD.MongoModel("RelatedModel", relatedSchema);
-        const TestModel = await mongoD.MongoModel("TestModel", testSchema);
+        const RelatedModel = Model("RelatedModel", relatedSchema);
+        const TestModel = Model("TestModel", testSchema);
+
+        await InitModels(client);
 
         const related = await RelatedModel.Create({ title: "Related" });
         const related2 = await RelatedModel.Create({ title: "Related2" });
@@ -139,19 +147,21 @@ describe("Mongo model Delete", () => {
     }, 0);
 
     it("should delete without required", async () => {
-        const relatedSchema = mongoD.NewSchema({
+        const relatedSchema = new Schema({
             title: { type: String, required: true },
         });
-        const testSchema = mongoD.NewSchema({
+        const testSchema = new Schema({
             name: { type: String, required: true },
             related: {
-                type: mongoD.Schema.Types.ObjectId,
+                type: mongoose.Schema.Types.ObjectId,
                 ref: "RelatedModel",
             },
         });
 
-        const RelatedModel = await mongoD.MongoModel("RelatedModel", relatedSchema);
-        const TestModel = await mongoD.MongoModel("TestModel", testSchema);
+        const RelatedModel = Model("RelatedModel", relatedSchema);
+        const TestModel = Model("TestModel", testSchema);
+
+        await InitModels(client);
 
         const related = await RelatedModel.Create({ title: "Related" });
         const tests = await TestModel.Create([
@@ -177,21 +187,23 @@ describe("Mongo model Delete", () => {
     }, 0);
 
     it("should nested delete without required", async () => {
-        const relatedSchema = mongoD.NewSchema({
+        const relatedSchema = new Schema({
             title: { type: String, required: true },
         });
-        const testSchema = mongoD.NewSchema({
+        const testSchema = new Schema({
             name: { type: String, required: true },
             nested: {
                 related: {
-                    type: mongoD.Schema.Types.ObjectId,
+                    type: mongoose.Schema.Types.ObjectId,
                     ref: "RelatedModel",
                 }
             },
         });
 
-        const RelatedModel = await mongoD.MongoModel("RelatedModel", relatedSchema);
-        const TestModel = await mongoD.MongoModel("TestModel", testSchema);
+        const RelatedModel = Model("RelatedModel", relatedSchema);
+        const TestModel = Model("TestModel", testSchema);
+
+        await InitModels(client);
 
         const related = await RelatedModel.Create({ title: "Related" });
         const tests = await TestModel.Create([
@@ -221,19 +233,21 @@ describe("Mongo model Delete", () => {
     }, 0);
 
     it("should array delete without required", async () => {
-        const relatedSchema = mongoD.NewSchema({
+        const relatedSchema = new Schema({
             title: { type: String, required: true },
         });
-        const testSchema = mongoD.NewSchema({
+        const testSchema = new Schema({
             name: { type: String, required: true },
             related: {
-                type: [ mongoD.Schema.Types.ObjectId ],
+                type: [ mongoose.Schema.Types.ObjectId ],
                 ref: "RelatedModel",
             },
         });
 
-        const RelatedModel = await mongoD.MongoModel("RelatedModel", relatedSchema);
-        const TestModel = await mongoD.MongoModel("TestModel", testSchema);
+        const RelatedModel = Model("RelatedModel", relatedSchema);
+        const TestModel = Model("TestModel", testSchema);
+
+        await InitModels(client);
 
         const related = await RelatedModel.Create({ title: "Related" });
         const related2 = await RelatedModel.Create({ title: "Related2" });
@@ -266,20 +280,22 @@ describe("Mongo model Delete", () => {
     }, 0);
 
     it("should delete with immutable and delete", async () => {
-        const relatedSchema = mongoD.NewSchema({
+        const relatedSchema = new Schema({
             title: { type: String, required: true },
         });
-        const testSchema = mongoD.NewSchema({
+        const testSchema = new Schema({
             name: { type: String, required: true },
             related: {
-                type: mongoD.Schema.Types.ObjectId,
+                type: mongoose.Schema.Types.ObjectId,
                 ref: "RelatedModel",
                 immutable: true,
             },
         });
 
-        const RelatedModel = await mongoD.MongoModel("RelatedModel", relatedSchema);
-        const TestModel = await mongoD.MongoModel("TestModel", testSchema);
+        const RelatedModel = Model("RelatedModel", relatedSchema);
+        const TestModel = Model("TestModel", testSchema);
+
+        await InitModels(client);
 
         const related = await RelatedModel.Create({ title: "Related" });
         const tests = await TestModel.Create([
@@ -303,22 +319,24 @@ describe("Mongo model Delete", () => {
     }, 0);
 
     it("should nested delete with immutable and delete", async () => {
-        const relatedSchema = mongoD.NewSchema({
+        const relatedSchema = new Schema({
             title: { type: String, required: true },
         });
-        const testSchema = mongoD.NewSchema({
+        const testSchema = new Schema({
             name: { type: String, required: true },
             nested: {
                 related: {
-                    type: mongoD.Schema.Types.ObjectId,
+                    type: mongoose.Schema.Types.ObjectId,
                     ref: "RelatedModel",
                     immutable: true
                 }
             },
         });
 
-        const RelatedModel = await mongoD.MongoModel("RelatedModel", relatedSchema);
-        const TestModel = await mongoD.MongoModel("TestModel", testSchema);
+        const RelatedModel = Model("RelatedModel", relatedSchema);
+        const TestModel = Model("TestModel", testSchema);
+
+        await InitModels(client);
 
         const related = await RelatedModel.Create({ title: "Related" });
         const tests = await TestModel.Create([
@@ -346,20 +364,22 @@ describe("Mongo model Delete", () => {
     }, 0);
 
     it("should array delete with immutable and delete", async () => {
-        const relatedSchema = mongoD.NewSchema({
+        const relatedSchema = new Schema({
             title: { type: String, required: true },
         });
-        const testSchema = mongoD.NewSchema({
+        const testSchema = new Schema({
             name: { type: String, required: true },
             related: {
-                type: [ mongoD.Schema.Types.ObjectId ],
+                type: [ mongoose.Schema.Types.ObjectId ],
                 ref: "RelatedModel",
                 immutable: true
             },
         });
 
-        const RelatedModel = await mongoD.MongoModel("RelatedModel", relatedSchema);
-        const TestModel = await mongoD.MongoModel("TestModel", testSchema);
+        const RelatedModel = Model("RelatedModel", relatedSchema);
+        const TestModel = Model("TestModel", testSchema);
+
+        await InitModels(client);
 
         const related = await RelatedModel.Create({ title: "Related" });
         const related2 = await RelatedModel.Create({ title: "Related2" });
@@ -396,22 +416,24 @@ describe("Mongo model Delete", () => {
     }, 0);
 
     it("should delete with immutable and keep", async () => {
-        const relatedSchema = mongoD.NewSchema({
+        const relatedSchema = new Schema({
             title: { type: String, required: true },
         });
-        const testSchema = mongoD.NewSchema({
+        const testSchema = new Schema({
             name: { type: String, required: true },
             nested: {
                 related: {
-                    type: mongoD.Schema.Types.ObjectId,
+                    type: mongoose.Schema.Types.ObjectId,
                     ref: "RelatedModel",
                     immutable: true
                 }
             },
         });
 
-        const RelatedModel = await mongoD.MongoModel("RelatedModel", relatedSchema);
-        const TestModel = await mongoD.MongoModel("TestModel", testSchema);
+        const RelatedModel = Model("RelatedModel", relatedSchema);
+        const TestModel = Model("TestModel", testSchema);
+
+        await InitModels(client);
 
         const related = await RelatedModel.Create({ title: "Related" });
         const tests = await TestModel.Create([
@@ -441,22 +463,24 @@ describe("Mongo model Delete", () => {
     }, 0);
 
     it("should nested delete with immutable and delete", async () => {
-        const relatedSchema = mongoD.NewSchema({
+        const relatedSchema = new Schema({
             title: { type: String, required: true },
         });
-        const testSchema = mongoD.NewSchema({
+        const testSchema = new Schema({
             name: { type: String, required: true },
             nested: {
                 related: {
-                    type: mongoD.Schema.Types.ObjectId,
+                    type: mongoose.Schema.Types.ObjectId,
                     ref: "RelatedModel",
                     immutable: true
                 }
             },
         });
 
-        const RelatedModel = await mongoD.MongoModel("RelatedModel", relatedSchema);
-        const TestModel = await mongoD.MongoModel("TestModel", testSchema);
+        const RelatedModel = Model("RelatedModel", relatedSchema);
+        const TestModel = Model("TestModel", testSchema);
+
+        await InitModels(client);
 
         const related = await RelatedModel.Create({ title: "Related" });
         const tests = await TestModel.Create([
@@ -486,20 +510,22 @@ describe("Mongo model Delete", () => {
     }, 0);
 
     it("should array delete with immutable and keep", async () => {
-        const relatedSchema = mongoD.NewSchema({
+        const relatedSchema = new Schema({
             title: { type: String, required: true },
         });
-        const testSchema = mongoD.NewSchema({
+        const testSchema = new Schema({
             name: { type: String, required: true },
             related: {
-                type: [ mongoD.Schema.Types.ObjectId ],
+                type: [ mongoose.Schema.Types.ObjectId ],
                 ref: "RelatedModel",
                 immutable: true
             },
         });
 
-        const RelatedModel = await mongoD.MongoModel("RelatedModel", relatedSchema);
-        const TestModel = await mongoD.MongoModel("TestModel", testSchema);
+        const RelatedModel = Model("RelatedModel", relatedSchema);
+        const TestModel = Model("TestModel", testSchema);
+
+        await InitModels(client);
 
         const related = await RelatedModel.Create({ title: "Related" });
         const related2 = await RelatedModel.Create({ title: "Related2" });
@@ -536,22 +562,24 @@ describe("Mongo model Delete", () => {
     }, 0);
 
     it("should nested and array delete with required", async () => {
-        const relatedSchema = mongoD.NewSchema({
+        const relatedSchema = new Schema({
             title: { type: String, required: true },
         });
-        const testSchema = mongoD.NewSchema({
+        const testSchema = new Schema({
             name: { type: String, required: true },
             nested: {
                 related: {
-                    type: [ mongoD.Schema.Types.ObjectId ],
+                    type: [ mongoose.Schema.Types.ObjectId ],
                     ref: "RelatedModel",
                     required: true,
                 }
             },
         });
 
-        const RelatedModel = await mongoD.MongoModel("RelatedModel", relatedSchema);
-        const TestModel = await mongoD.MongoModel("TestModel", testSchema);
+        const RelatedModel = Model("RelatedModel", relatedSchema);
+        const TestModel = Model("TestModel", testSchema);
+
+        await InitModels(client);
 
         const related = await RelatedModel.Create({ title: "Related" });
         const related2 = await RelatedModel.Create({ title: "Related2" });

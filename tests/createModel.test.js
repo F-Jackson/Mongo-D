@@ -85,6 +85,7 @@ describe("Mongo model creation", () => {
         });
 
         const SimpleModel = Model("SimpleModel", simpleSchema);
+        await InitModels(client);
 
         expect(Object.entries(mongoose.__models)).toHaveLength(1);
         expect(mongoose.__models).toHaveProperty("SimpleModel");
@@ -108,7 +109,8 @@ describe("Mongo model creation", () => {
             },
         });
 
-        const MultiFKModel = await mongoose.model("MultiFKModel", multiFKSchema);
+        const MultiFKModel = Model("MultiFKModel", multiFKSchema);
+        await InitModels(client);
 
         expect(Object.entries(MultiFKModel._FKS)).toHaveLength(1);
         expect(MultiFKModel._FKS).toMatchObject({
@@ -131,13 +133,15 @@ describe("Mongo model creation", () => {
         });
     });
 
-    /*
+
     it("should handle deletion of foreign key metadata when model is removed", async () => {
-        const TestModel = await mongoose.model("TestModel", relatedSchema);
+        const TestModel = Model("TestModel", relatedSchema);
+        await InitModels(client);
+
         await TestModel.create({title: "test"});
         await TestModel.dropCollection();
 
-        expect(Object.entries(mongoose.models)).toHaveLength(0);
+        expect(Object.entries(mongoose.__models)).toHaveLength(0);
         let db = client.connection.db;
         let collections = await db.listCollections().toArray();
         expect(collections).toHaveLength(0);
@@ -170,7 +174,8 @@ describe("Mongo model creation", () => {
             },
             lo: [String]
         });
-        const NestedModel = await mongoose.model("NestedModel", nestedSchema);
+        const NestedModel = Model("NestedModel", nestedSchema);
+        await InitModels(client);
 
         expect(nestedSchema).toHaveProperty("__properties");
         const propertiesKeys = Object.entries(nestedSchema.__properties).map(([key, _]) => key);
@@ -269,6 +274,7 @@ describe("Mongo model creation", () => {
         );
     });
 
+    /*
     it("should process deeply nested foreign keys", async () => {
         const nestedSchema = new Schema({
             nestedField: {

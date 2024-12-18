@@ -31,7 +31,6 @@ describe("Mongo model creation", () => {
         await disconnectDb(client);
     });
 
-    /*
     it("should create a model and process foreign keys", async () => {
         const RelatedModel = await Model("RelatedModel", relatedSchema);
         const TestModel = await Model("TestModel", testSchema);
@@ -368,7 +367,7 @@ describe("Mongo model creation", () => {
         expect(Object.keys(client.__relations["RelatedModel"])).toMatchObject(["TestModel", "AnotherTestModel"]);
         expect(TestModel).toHaveProperty("_FKS");
         expect(AnotherTestModel).toHaveProperty("_FKS");
-    });*/
+    });
 
     it("should correctly delete a foreign key model and not affect other models", async () => {
         const RelatedModel = Model("RelatedModel", relatedSchema);
@@ -494,7 +493,6 @@ describe("Mongo model creation", () => {
         }
     });    
 
-    /*
     it("should create a model and process foreign indexed keys", async () => {
         const testSchema2 = new Schema({
             name: { type: String, required: true },
@@ -508,6 +506,7 @@ describe("Mongo model creation", () => {
 
         const RelatedModel = Model("RelatedModel", relatedSchema);
         const TestModel = Model("TestModel", testSchema2);
+        await InitModels(client);
 
         expect(mongoose.__models).toHaveProperty("TestModel");
         expect(mongoose.__models).toHaveProperty("RelatedModel");
@@ -535,6 +534,7 @@ describe("Mongo model creation", () => {
             children: [{ type: mongoose.Schema.Types.ObjectId, ref: "TestModel", required: true }],
             po: [String]
         }));
+        await InitModels(client);
 
         expect(Object.entries(mongoose.__models)).toHaveLength(2);
         expect(mongoose.__models).toHaveProperty("TestModel");
@@ -546,13 +546,15 @@ describe("Mongo model creation", () => {
 
     it("should delete all cache after collection drop", async () => {
         const TestModel = Model("TestModel", testSchema);
+        await InitModels(client);
         
         await TestModel.dropCollection();
 
         expect(Object.entries(mongoose.__models)).toHaveLength(0);
-        expect(Object.entries(mongoose.__models)).toHaveLength(0);
+        expect(Object.entries(mongoose.__relations)).toHaveLength(0);
     });
 
+    /*
     it("should handle getActivate error", async () => {
         const RelatedModel = Model("RelatedModel", relatedSchema);
 

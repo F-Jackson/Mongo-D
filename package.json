@@ -2,8 +2,8 @@
   "name": "@fjackson/mongo-d",
   "version": "1.0.5",
   "description": "An library for for link ids in mongoose",
-  "main": "dist/bundle.js",
   "types": "dist/index.d.ts",
+  "main": "dist/bundle.cjs.js",
   "module": "dist/bundle.esm.js",
   "files": [ "dist/**/*" ],
   "directories": {
@@ -41,5 +41,11 @@
     "prettier": "^3.4.2",
     "rollup": "^4.28.1",
     "vitest": "^2.1.8"
+  },
+  "exports": {
+    ".": {
+      "import": "./dist/bundle.esm.js",
+      "require": "./dist/bundle.cjs.js"
+    }
   }
 }

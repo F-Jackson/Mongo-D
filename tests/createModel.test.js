@@ -187,8 +187,6 @@ describe("Mongo model creation", () => {
                 "nestedField.ll.h",
                 "nestedField2.po2.subField",
                 "nestedField2.po2.arrayTest",
-                "nestedField",
-                "nestedField2",
                 "lo",
                 "_id",
                 "__v"

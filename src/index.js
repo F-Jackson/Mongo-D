@@ -8,20 +8,26 @@ import {
 import { changeClient } from "./clientChangeFuncs";
 
 
-class Schema extends mongoose.Schema {
+class Schema {
     constructor(obj, options) {
-        super(obj, options);
-        this.__properties = {};
+        const mongoSchema = class extends mongoose.Schema {};
 
-        for (const path in obj) {
-            if (obj.hasOwnProperty(path)) {
-                this.__properties[path] = obj[path];
+        const properties = {};
+        const originalPath = mongoSchema.prototype.path;
+
+        mongoSchema.prototype.path = function (path, obj) {
+            if (!obj) {
+                return originalPath.call(this, path);
             }
-        }
-    }
 
-    getProperties() {
-        return this.__properties;
+            properties[path] = obj;
+            return originalPath.call(this, path, obj);
+        };
+
+        const schema = new mongoSchema(obj, options);
+        schema.__properties = properties;
+
+        return schema;
     }
 }
 

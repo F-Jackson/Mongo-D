@@ -17,7 +17,7 @@ export class ForeignKeyProcessor {
         await this._getActiveForeignKeys();
         await this._populateForeignKeyMetadata();
     };
-
+    
     _getActiveForeignKeys = async () => {
         if (!this.mongoModel.schema["__properties"]) return;
 

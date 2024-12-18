@@ -6,8 +6,8 @@ import json from '@rollup/plugin-json';
 export default {
   input: 'src/index.js', // Entry point of your library
   output: {
-    file: 'dist/bundle.js', // Output file
-    format: 'cjs', // CommonJS format
+    file: 'dist/bundle.esm.js', // Saída em formato ES Module
+    format: 'esm', // ES Module format
     sourcemap: true,
   },
   plugins: [

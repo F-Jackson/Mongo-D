@@ -509,11 +509,9 @@ describe("Mongo model creation", () => {
         expect(RelatedModel).not.toHaveProperty("_FKS");
     });
 
-    /*
     it("should handle getActivate error", async () => {
-        const RelatedModel = Model("RelatedModel", relatedSchema);
-
         try{
+            const RelatedModel = Model("RelatedModel", relatedSchema);
             const TestModel = Model(
                 "TestModel", testSchema, undefined, undefined, 
                 {
@@ -524,35 +522,17 @@ describe("Mongo model creation", () => {
                 }
             );
 
+            await InitModels(client);
+
             expect(true).toBe(false);
         } catch (e) {
+            expect(Object.entries(mongoose.__models)).toHaveLength(1);
             expect(mongoose.__models).not.toHaveProperty("TestModel");
             expect(mongoose.__models).toHaveProperty("RelatedModel");
-            expect(Object.entries(mongoose.__models)).toHaveLength(1);
-            expect(Object.entries(mongoose.__models)).toHaveLength(1);
-            expect(mongoose.__models).toHaveProperty("RelatedModel");
-
-            const TestModel = Model("TestModel", testSchema);
-            expect(Object.entries(mongoose.__models)).toHaveLength(2);
-            expect(Object.entries(mongoose.__models)).toHaveLength(2);
-            expect(mongoose.__models).toHaveProperty("TestModel");
-            expect(mongoose.__models).toHaveProperty("RelatedModel");
-
-            expect(Object.entries(TestModel._FKS)).toHaveLength(1);
-            expect(TestModel._FKS).toMatchObject({
-                "RelatedModel": [
-                    {
-                        path: ["related"],
-                        required: true,
-                        immutable: false,
-                        unique: false,
-                        array: false,
-                    }
-                ]
-            });
         }
     });
 
+    /*
     it("should handle populateForeignKeyMetadata error", async () => {
         const RelatedModel = Model("RelatedModel", relatedSchema);
 

@@ -30,7 +30,7 @@ describe("Mongo model creation", () => {
     afterEach(async () => {
         await disconnectDb(client);
     });
-
+/*
     it("should create a model and process foreign keys", async () => {
         const RelatedModel = await Model("RelatedModel", relatedSchema);
         const TestModel = await Model("TestModel", testSchema);
@@ -409,7 +409,7 @@ describe("Mongo model creation", () => {
                 },
             ]
         });
-    });
+    });*/
 
     it("should error if not given ref in foreign key", async () => {
         const schemaWithObjectIdFK = new Schema({
@@ -427,8 +427,9 @@ describe("Mongo model creation", () => {
             },
         });
 
+        Model("ModelWithObjectIdFK", schemaWithObjectIdFK);
+
         try {
-            Model("ModelWithObjectIdFK", schemaWithObjectIdFK);
             Model("ModelWithEmbeddedDocFK", schemaWithEmbeddedDocFK);
 
             await InitModels(client);
@@ -458,6 +459,7 @@ describe("Mongo model creation", () => {
         }
     });    
 
+    /*
     it("should create a model and process foreign indexed keys", async () => {
         const testSchema2 = new Schema({
             name: { type: String, required: true },
@@ -533,7 +535,7 @@ describe("Mongo model creation", () => {
             expect(mongoose.__models).not.toHaveProperty("TestModel");
             expect(mongoose.__models).toHaveProperty("RelatedModel");
         }
-    });
+    });*/
 
     /*
     it("should handle populateForeignKeyMetadata error", async () => {

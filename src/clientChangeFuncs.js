@@ -1,13 +1,13 @@
 export const changeClient = async (client) => {
-    client.__relations = {};
-    client.__oldRelations = {};
+    if (!client.__relations) client.__relations = {};
+    if (!client.__oldRelations) client.__oldRelations = {};
     if (!client.__sincedModels) client.__sincedModels = new Set();
 
     client.addRelations = async (fks, modelName) => {
         fks.forEach(([name, fk]) => {
             if (!client.__relations[name]) client.__relations[name] = {};
 
-            client.__relations[name][modelName] = fk;
+            if (!client.__relations[name][modelName]) client.__relations[name][modelName] = fk;
         });
     };
 

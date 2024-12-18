@@ -467,10 +467,10 @@ describe("Mongo model creation", () => {
 
         try {
             Model("ModelWithEmbeddedDocFK", schemaWithEmbeddedDocFK);
-            await InitModels(client);
 
             expect(true).toBe(false);
         } catch (error) {
+            console.log(mongoose.__models);
             expect(Object.entries(mongoose.__models)).toHaveLength(1);
             expect(Object.entries(client.__relations)).toHaveLength(1);
 

@@ -13,7 +13,6 @@ declare module '@fjackson/mongo-d' {
     ) => mongoose.Model<any, unknown, unknown, unknown, any, any>;
 
     export const InitModels: (
-        client: typeof mongoose,
-        __mocks?: Record<string, any>
+        client: typeof mongoose
     ) => Promise<void>;
 }

@@ -270,7 +270,6 @@ describe("Mongo model creation", () => {
         );
     });
 
-    /*
     it("should process deeply nested foreign keys", async () => {
         const nestedSchema = new Schema({
             nestedField: {
@@ -298,10 +297,11 @@ describe("Mongo model creation", () => {
             },
             lo: [String]
         });
-        const NestedModel = await mongoose.model("NestedModel", nestedSchema);
+        const NestedModel = Model("NestedModel", nestedSchema);
+        await InitModels(client);
 
-        expect(Object.entries(mongoose.models)).toHaveLength(1);
-        expect(mongoose.models).toHaveProperty("NestedModel");
+        expect(Object.entries(mongoose.__models)).toHaveLength(1);
+        expect(mongoose.__models).toHaveProperty("NestedModel");
         expect(Object.entries(client.__relations)).toHaveLength(1);
         expect(Object.entries(client.__relations["RelatedModel"])).toHaveLength(1);
         expect(Object.keys(client.__relations["RelatedModel"])).toMatchObject(["NestedModel"]);
@@ -338,10 +338,11 @@ describe("Mongo model creation", () => {
             },
         });
 
-        const OptionalModel = await mongoose.model("OptionalModel", optionalSchema);
+        const OptionalModel = Model("OptionalModel", optionalSchema);
+        await InitModels(client);
 
-        expect(Object.entries(mongoose.models)).toHaveLength(1);
-        expect(mongoose.models).toHaveProperty("OptionalModel");
+        expect(Object.entries(mongoose.__models)).toHaveLength(1);
+        expect(mongoose.__models).toHaveProperty("OptionalModel");
 
         expect(OptionalModel).not.toHaveProperty("_FKS");
     });
@@ -356,11 +357,12 @@ describe("Mongo model creation", () => {
             },
         });
 
-        const RelatedModel = await mongoose.model("RelatedModel", relatedSchema);
-        const TestModel = await mongoose.model("TestModel", testSchema);
-        const AnotherTestModel = await mongoose.model("AnotherTestModel", anotherTestSchema);
+        const RelatedModel = Model("RelatedModel", relatedSchema);
+        const TestModel = Model("TestModel", testSchema);
+        const AnotherTestModel = Model("AnotherTestModel", anotherTestSchema);
+        await InitModels(client);
 
-        expect(Object.entries(mongoose.models)).toHaveLength(3);
+        expect(Object.entries(mongoose.__models)).toHaveLength(3);
         expect(Object.entries(client.__relations)).toHaveLength(1);
         expect(Object.keys(client.__relations["RelatedModel"])).toMatchObject(["TestModel", "AnotherTestModel"]);
         expect(TestModel).toHaveProperty("_FKS");
@@ -368,11 +370,12 @@ describe("Mongo model creation", () => {
     });
 
     it("should correctly delete a foreign key model and not affect other models", async () => {
-        const RelatedModel = await mongoose.model("RelatedModel", relatedSchema);
-        const TestModel = await mongoose.model("TestModel", testSchema);
-        const AnotherTestModel = await mongoose.model("AnotherTestModell", testSchema);
+        const RelatedModel = Model("RelatedModel", relatedSchema);
+        const TestModel = Model("TestModel", testSchema);
+        const AnotherTestModel = Model("AnotherTestModell", testSchema);
+        await InitModels(client);
 
-        expect(Object.entries(mongoose.models)).toHaveLength(3);
+        expect(Object.entries(mongoose.__models)).toHaveLength(3);
         expect(Object.entries(client.__relations)).toHaveLength(1);
         expect(Object.keys(client.__relations["RelatedModel"])).toMatchObject(["TestModel", "AnotherTestModell"]);
         expect(Object.keys(TestModel._FKS)).toHaveLength(1);
@@ -380,7 +383,7 @@ describe("Mongo model creation", () => {
 
         await RelatedModel.dropCollection();
 
-        expect(Object.entries(mongoose.models)).toHaveLength(2);
+        expect(Object.entries(mongoose.__models)).toHaveLength(2);
         expect(Object.keys(TestModel._FKS)).toHaveLength(0);
         expect(Object.keys(AnotherTestModel._FKS)).toHaveLength(0);
 
@@ -406,10 +409,11 @@ describe("Mongo model creation", () => {
             },
         });
     
-        const ModelA = await mongoose.model("ModelA", circularSchemaA);
-        const ModelB = await mongoose.model("ModelB", circularSchemaB);
+        const ModelA = Model("ModelA", circularSchemaA);
+        const ModelB = Model("ModelB", circularSchemaB);
+        await InitModels(client);
     
-        expect(Object.entries(mongoose.models)).toHaveLength(2);
+        expect(Object.entries(mongoose.__models)).toHaveLength(2);
         expect(Object.entries(client.__relations)).toHaveLength(2);
 
         expect(Object.keys(client.__relations["ModelA"])).toMatchObject(["ModelB"]);
@@ -458,14 +462,16 @@ describe("Mongo model creation", () => {
             },
         });
 
-        await mongoose.model("ModelWithObjectIdFK", schemaWithObjectIdFK);
+        Model("ModelWithObjectIdFK", schemaWithObjectIdFK);
+        await InitModels(client);
 
         try {
-            await mongoose.model("ModelWithEmbeddedDocFK", schemaWithEmbeddedDocFK);
+            Model("ModelWithEmbeddedDocFK", schemaWithEmbeddedDocFK);
+            await InitModels(client);
 
             expect(true).toBe(false);
         } catch (error) {
-            expect(Object.entries(mongoose.models)).toHaveLength(1);
+            expect(Object.entries(mongoose.__models)).toHaveLength(1);
             expect(Object.entries(client.__relations)).toHaveLength(1);
 
             const schemaWithEmbeddedDocFKUnlinked = new Schema({
@@ -476,13 +482,15 @@ describe("Mongo model creation", () => {
                 },
             });
 
-            await mongoose.model("ModelWithEmbeddedDocFKUnlinked", schemaWithEmbeddedDocFKUnlinked);
+            Model("ModelWithEmbeddedDocFKUnlinked", schemaWithEmbeddedDocFKUnlinked);
+            await InitModels(client);
 
-            expect(Object.entries(mongoose.models)).toHaveLength(2);
+            expect(Object.entries(mongoose.__models)).toHaveLength(2);
             expect(Object.entries(client.__relations)).toHaveLength(1);
         }
     });    
 
+    /*
     it("should create a model and process foreign indexed keys", async () => {
         const testSchema2 = new Schema({
             name: { type: String, required: true },
@@ -494,11 +502,11 @@ describe("Mongo model creation", () => {
             },
         });
 
-        const RelatedModel = await mongoose.model("RelatedModel", relatedSchema);
-        const TestModel = await mongoose.model("TestModel", testSchema2);
+        const RelatedModel = Model("RelatedModel", relatedSchema);
+        const TestModel = Model("TestModel", testSchema2);
 
-        expect(mongoose.models).toHaveProperty("TestModel");
-        expect(mongoose.models).toHaveProperty("RelatedModel");
+        expect(mongoose.__models).toHaveProperty("TestModel");
+        expect(mongoose.__models).toHaveProperty("RelatedModel");
         expect(Object.entries(client.__relations)).toHaveLength(1);
 
         expect(Object.entries(TestModel._FKS)).toHaveLength(1);
@@ -516,36 +524,36 @@ describe("Mongo model creation", () => {
     });
 
     it("should create with an array of references", async () => {
-        const TestModel = await mongoose.model("TestModel", new Schema({
+        const TestModel = Model("TestModel", new Schema({
             label: { type: String, required: true },
         }));
-        const RelatedModel = await mongoose.model("RelatedModel", new Schema({
+        const RelatedModel = Model("RelatedModel", new Schema({
             children: [{ type: mongoose.Schema.Types.ObjectId, ref: "TestModel", required: true }],
             po: [String]
         }));
 
-        expect(Object.entries(mongoose.models)).toHaveLength(2);
-        expect(mongoose.models).toHaveProperty("TestModel");
-        expect(mongoose.models).toHaveProperty("RelatedModel");
+        expect(Object.entries(mongoose.__models)).toHaveLength(2);
+        expect(mongoose.__models).toHaveProperty("TestModel");
+        expect(mongoose.__models).toHaveProperty("RelatedModel");
         expect(Object.entries(client.__relations)).toHaveLength(0);
 
         expect(RelatedModel).not.toHaveProperty("_FKS");
     });
 
     it("should delete all cache after collection drop", async () => {
-        const TestModel = await mongoose.model("TestModel", testSchema);
+        const TestModel = Model("TestModel", testSchema);
         
         await TestModel.dropCollection();
 
-        expect(Object.entries(mongoose.models)).toHaveLength(0);
-        expect(Object.entries(mongoose.models)).toHaveLength(0);
+        expect(Object.entries(mongoose.__models)).toHaveLength(0);
+        expect(Object.entries(mongoose.__models)).toHaveLength(0);
     });
 
     it("should handle getActivate error", async () => {
-        const RelatedModel = await mongoose.model("RelatedModel", relatedSchema);
+        const RelatedModel = Model("RelatedModel", relatedSchema);
 
         try{
-            const TestModel = await mongoose.model(
+            const TestModel = Model(
                 "TestModel", testSchema, undefined, undefined, 
                 {
                     "_getActiveForeignKeys": async () => {
@@ -557,17 +565,17 @@ describe("Mongo model creation", () => {
 
             expect(true).toBe(false);
         } catch (e) {
-            expect(mongoose.models).not.toHaveProperty("TestModel");
-            expect(mongoose.models).toHaveProperty("RelatedModel");
-            expect(Object.entries(mongoose.models)).toHaveLength(1);
-            expect(Object.entries(mongoose.models)).toHaveLength(1);
-            expect(mongoose.models).toHaveProperty("RelatedModel");
+            expect(mongoose.__models).not.toHaveProperty("TestModel");
+            expect(mongoose.__models).toHaveProperty("RelatedModel");
+            expect(Object.entries(mongoose.__models)).toHaveLength(1);
+            expect(Object.entries(mongoose.__models)).toHaveLength(1);
+            expect(mongoose.__models).toHaveProperty("RelatedModel");
 
-            const TestModel = await mongoose.model("TestModel", testSchema);
-            expect(Object.entries(mongoose.models)).toHaveLength(2);
-            expect(Object.entries(mongoose.models)).toHaveLength(2);
-            expect(mongoose.models).toHaveProperty("TestModel");
-            expect(mongoose.models).toHaveProperty("RelatedModel");
+            const TestModel = Model("TestModel", testSchema);
+            expect(Object.entries(mongoose.__models)).toHaveLength(2);
+            expect(Object.entries(mongoose.__models)).toHaveLength(2);
+            expect(mongoose.__models).toHaveProperty("TestModel");
+            expect(mongoose.__models).toHaveProperty("RelatedModel");
 
             expect(Object.entries(TestModel._FKS)).toHaveLength(1);
             expect(TestModel._FKS).toMatchObject({
@@ -585,10 +593,10 @@ describe("Mongo model creation", () => {
     });
 
     it("should handle populateForeignKeyMetadata error", async () => {
-        const RelatedModel = await mongoose.model("RelatedModel", relatedSchema);
+        const RelatedModel = Model("RelatedModel", relatedSchema);
 
         try{
-            const TestModel = await mongoose.model(
+            const TestModel = Model(
                 "TestModel", testSchema, undefined, undefined, 
                 {
                     "_populateForeignKeyMetadata": async () => {
@@ -600,17 +608,17 @@ describe("Mongo model creation", () => {
 
             expect(true).toBe(false);
         } catch (e) {
-            expect(mongoose.models).not.toHaveProperty("TestModel");
-            expect(mongoose.models).toHaveProperty("RelatedModel");
-            expect(Object.entries(mongoose.models)).toHaveLength(1);
-            expect(Object.entries(mongoose.models)).toHaveLength(1);
-            expect(mongoose.models).toHaveProperty("RelatedModel");
+            expect(mongoose.__models).not.toHaveProperty("TestModel");
+            expect(mongoose.__models).toHaveProperty("RelatedModel");
+            expect(Object.entries(mongoose.__models)).toHaveLength(1);
+            expect(Object.entries(mongoose.__models)).toHaveLength(1);
+            expect(mongoose.__models).toHaveProperty("RelatedModel");
 
-            const TestModel = await mongoose.model("TestModel", testSchema);
-            expect(Object.entries(mongoose.models)).toHaveLength(2);
-            expect(Object.entries(mongoose.models)).toHaveLength(2);
-            expect(mongoose.models).toHaveProperty("TestModel");
-            expect(mongoose.models).toHaveProperty("RelatedModel");
+            const TestModel = Model("TestModel", testSchema);
+            expect(Object.entries(mongoose.__models)).toHaveLength(2);
+            expect(Object.entries(mongoose.__models)).toHaveLength(2);
+            expect(mongoose.__models).toHaveProperty("TestModel");
+            expect(mongoose.__models).toHaveProperty("RelatedModel");
 
             expect(Object.entries(TestModel._FKS)).toHaveLength(1);
             expect(TestModel._FKS).toMatchObject({
@@ -628,7 +636,7 @@ describe("Mongo model creation", () => {
     });
 
     it("should handle collection drop data inside db", async () => {
-        const RelatedModel = await mongoose.model("RelatedModel", relatedSchema);
+        const RelatedModel = Model("RelatedModel", relatedSchema);
         await RelatedModel.create({
             title: "test"
         });
@@ -647,7 +655,7 @@ describe("Mongo model creation", () => {
         expect(collections.map(col => col.name)).toHaveLength(0);
         expect(collections.map(col => col.name)).not.toContain("relatedmodels");
 
-        const RelatedModel2 = await mongoose.model("RelatedModel", relatedSchema);
+        const RelatedModel2 = Model("RelatedModel", relatedSchema);
         expect((await RelatedModel2.find({}))).toHaveLength(0);
 
         await RelatedModel2.create({
@@ -662,7 +670,7 @@ describe("Mongo model creation", () => {
     });
 
     it("should handle erro data inside db", async () => {
-        const RelatedModel = await mongoose.model("RelatedModel", relatedSchema);
+        const RelatedModel = Model("RelatedModel", relatedSchema);
         await RelatedModel.create({
             title: "test"
         });
@@ -674,14 +682,14 @@ describe("Mongo model creation", () => {
         expect(collections.map(col => col.name)).toContain("relatedmodels");
 
         await deleteFromMongoose("RelatedModel");
-        delete mongoose.models["RelatedModel"];
+        delete mongoose.__models["RelatedModel"];
 
         db = client.connection.db;
         collections = await db.listCollections().toArray();
         expect(collections.map(col => col.name)).toHaveLength(1);
         expect(collections.map(col => col.name)).toContain("relatedmodels");
 
-        const RelatedModel2 = await mongoose.model("RelatedModel", new Schema({
+        const RelatedModel2 = Model("RelatedModel", new Schema({
             title: { type: String, required: true },
             name: String
         }));

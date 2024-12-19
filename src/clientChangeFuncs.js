@@ -1,7 +1,10 @@
-export const changeClient = async (client) => {
+import mongoose from "mongoose";
+
+export const changeClient = (client) => {
     if (!client.__relations) client.__relations = {};
     if (!client.__oldRelations) client.__oldRelations = {};
     if (!client.__sincedModels) client.__sincedModels = new Set();
+    if (!client.__models) client.__models = mongoose.__models | {};
 
     client.addRelations = async (fks, modelName) => {
         fks.forEach(([name, fk]) => {

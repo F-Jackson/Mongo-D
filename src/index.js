@@ -49,7 +49,7 @@ async function InitModels (
 ) {
     if (!client) throw new Error("Need to pass mongoose client");
 
-    await changeClient(client);
+    changeClient(client);
     await Promise.all(
         Object.entries(client.__models).map(async ([_, model]) => {
             if (client.__sincedModels.has(model.modelName)) return;

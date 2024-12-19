@@ -1,4 +1,3 @@
-import mongoose from "mongoose";
 import { 
     changeCreate, 
     changeDelete,
@@ -8,7 +7,7 @@ import { changeClient } from "./clientChangeFuncs";
 
 
 class Schema {
-    constructor(obj, options) {
+    constructor(mongoose, obj, options) {
         const mongoSchema = class extends mongoose.Schema {};
 
         const properties = {};
@@ -30,7 +29,7 @@ class Schema {
     }
 }
 
-const Model = (name, schema, collection, options) => {
+const Model = (mongoose, name, schema, collection, options) => {
     if (!mongoose.__models) {
         mongoose.__models = {};
     } else if (mongoose.__models[name]) {

@@ -1,12 +1,9 @@
-import mongoose from "mongoose";
-
-
-export const deleteFromMongoose = async(name) => {
-    delete mongoose.models[name];
-    delete mongoose.connection.models[name];
-    delete mongoose.__models[name];
-    if (mongoose.__sincedModels.has(name)) mongoose.__sincedModels.delete(name);
-    await mongoose.removeRelations(name);
+export const deleteFromMongoose = async(name, mongoD) => {
+    delete mongoD.models[name];
+    delete mongoD.connection.models[name];
+    delete mongoD.__models[name];
+    if (mongoD.__sincedModels.has(name)) mongoD.__sincedModels.delete(name);
+    await mongoD.removeRelations(name);
 }
 
 export const getNestedProperty = async(obj, path) => {

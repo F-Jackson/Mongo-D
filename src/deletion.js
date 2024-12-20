@@ -114,7 +114,7 @@ export class ForeignKeyDeleter {
         const recordsIds = relatedRecords.map(record => record._id);
         
         if (isArray) {
-            return this._handleArrayRecords(
+            this._handleArrayRecords(
                 relatedModel,
                 filterConditions,
                 relatedRecords,
@@ -122,7 +122,7 @@ export class ForeignKeyDeleter {
                 metaData
             );
         } else {
-            return this._handleRequiredOrImmutableRecords(
+            this._handleRequiredOrImmutableRecords(
                 relatedModel,
                 updatePaths,
                 recordsIds,
@@ -132,6 +132,8 @@ export class ForeignKeyDeleter {
                 metaData
             );
         }
+
+        return metaData;
     }
 
     async _processRelations(
@@ -139,11 +141,15 @@ export class ForeignKeyDeleter {
         models, 
         dealWithImmutable
     ) {
+        const records = {};
+
         const promises = Object.entries(relations).map(([relatedModelName, foreignKeys]) => {
-            return this._processSingleRelation(relatedModelName, foreignKeys, models, dealWithImmutable);
+            return this._processSingleRelation(relatedModelName, foreignKeys, models, dealWithImmutable).then(result => records[relatedModelName] = result);
         });
 
         await Promise.all(promises);
+
+        return records;
     }
 
     async delete(

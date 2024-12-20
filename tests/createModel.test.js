@@ -30,8 +30,8 @@ describe("Mongo model creation", () => {
     });
 
     it("should create a model and process foreign keys", async () => {
-        const RelatedModel = await Model("RelatedModel", relatedSchema);
-        const TestModel = await Model("TestModel", testSchema);
+        const RelatedModel = Model(mongoose, "RelatedModel", relatedSchema);
+        const TestModel = Model(mongoose, "TestModel", testSchema);
         await InitModels(client);
 
         expect(client.__models).toHaveProperty("TestModel");
@@ -55,7 +55,7 @@ describe("Mongo model creation", () => {
         const TestModel = Model(mongoose, "TestModel", testSchema);
 
         try {
-            Model("TestModel", relatedSchema)
+            Model(mongoose, "TestModel", relatedSchema)
         } catch (e) {
             await InitModels(client);
 
@@ -425,10 +425,10 @@ describe("Mongo model creation", () => {
             },
         });
 
-        Model("ModelWithObjectIdFK", schemaWithObjectIdFK);
+        Model(mongoose, "ModelWithObjectIdFK", schemaWithObjectIdFK);
 
         try {
-            Model("ModelWithEmbeddedDocFK", schemaWithEmbeddedDocFK);
+            Model(mongoose, "ModelWithEmbeddedDocFK", schemaWithEmbeddedDocFK);
 
             await InitModels(client);
 
@@ -446,8 +446,8 @@ describe("Mongo model creation", () => {
                 },
             });
 
-            Model("ModelWithEmbeddedDocFKUnlinked", schemaWithEmbeddedDocFKUnlinked);
-            Model("ModelWithObjectIdFK2", schemaWithObjectIdFK);
+            Model(mongoose, "ModelWithEmbeddedDocFKUnlinked", schemaWithEmbeddedDocFKUnlinked);
+            Model(mongoose, "ModelWithObjectIdFK2", schemaWithObjectIdFK);
 
             await InitModels(client);
 

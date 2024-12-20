@@ -31,7 +31,7 @@ class Schema {
 
 const Model = (mongoose, name, schema, collection, options) => {
     if (!mongoose.__models) {
-        mongoose.__models = {};
+        mongoose["__models"] = {};
     } else if (mongoose.__models[name]) {
         throw new Error("Model already exists");
     }

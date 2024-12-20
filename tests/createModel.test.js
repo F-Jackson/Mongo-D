@@ -12,10 +12,10 @@ describe("Mongo model creation", () => {
     beforeEach(async () => {
         client = await cleanDb();
 
-        relatedSchema = new Schema({
+        relatedSchema = new Schema(mongoose, {
             title: { type: String, required: true },
         });
-        testSchema = new Schema({
+        testSchema = new Schema(mongoose, {
             name: { type: String, required: true },
             related: {
                 type: mongoose.Schema.Types.ObjectId,
@@ -52,7 +52,7 @@ describe("Mongo model creation", () => {
     });
 
     it("should throw error if model with same name exists", async () => {
-        const TestModel = Model("TestModel", testSchema);
+        const TestModel = Model(mongoose, "TestModel", testSchema);
 
         try {
             Model("TestModel", relatedSchema)
@@ -78,11 +78,11 @@ describe("Mongo model creation", () => {
     });
 
     it("should handle models with no foreign keys", async () => {
-        const simpleSchema = new Schema({
+        const simpleSchema = new Schema(mongoose, {
             simpleField: { type: String, required: true },
         });
 
-        const SimpleModel = Model("SimpleModel", simpleSchema);
+        const SimpleModel = Model(mongoose, "SimpleModel", simpleSchema);
         await InitModels(client);
 
         expect(Object.entries(mongoose.__models)).toHaveLength(1);
@@ -93,7 +93,7 @@ describe("Mongo model creation", () => {
 
 
     it("should support multiple foreign keys in a single model", async () => {
-        const multiFKSchema = new Schema({
+        const multiFKSchema = new Schema(mongoose, {
             name: { type: String, required: true },
             related1: {
                 type: mongoose.Schema.Types.ObjectId,
@@ -107,7 +107,7 @@ describe("Mongo model creation", () => {
             },
         });
 
-        const MultiFKModel = Model("MultiFKModel", multiFKSchema);
+        const MultiFKModel = Model(mongoose, "MultiFKModel", multiFKSchema);
         await InitModels(client);
 
         expect(Object.entries(MultiFKModel._FKS)).toHaveLength(1);
@@ -132,7 +132,7 @@ describe("Mongo model creation", () => {
     });
 
     it("should process paths in schema", async () => {
-        const nestedSchema = new Schema({
+        const nestedSchema = new Schema(mongoose, {
             nestedField: {
                 subField: {
                     type: mongoose.Schema.Types.ObjectId,
@@ -158,7 +158,7 @@ describe("Mongo model creation", () => {
             },
             lo: [String]
         });
-        const NestedModel = Model("NestedModel", nestedSchema);
+        const NestedModel = Model(mongoose, "NestedModel", nestedSchema);
         await InitModels(client);
 
         expect(nestedSchema).toHaveProperty("__properties");
@@ -195,7 +195,7 @@ describe("Mongo model creation", () => {
     });
 
     it("should isolate process paths in schema", async () => {
-        const nestedSchema = new Schema({
+        const nestedSchema = new Schema(mongoose, {
                 nestedField: {
                     subField: {
                         type: mongoose.Schema.Types.ObjectId,
@@ -223,7 +223,7 @@ describe("Mongo model creation", () => {
                 },
                 lo: [String],
         });
-        const nestedSchema2 = new Schema({
+        const nestedSchema2 = new Schema(mongoose, {
                 isolated: [String],
         });
 
@@ -255,7 +255,7 @@ describe("Mongo model creation", () => {
     });
 
     it("should process deeply nested foreign keys", async () => {
-        const nestedSchema = new Schema({
+        const nestedSchema = new Schema(mongoose, {
             nestedField: {
                 subField: {
                     type: mongoose.Schema.Types.ObjectId,
@@ -281,7 +281,7 @@ describe("Mongo model creation", () => {
             },
             lo: [String]
         });
-        const NestedModel = Model("NestedModel", nestedSchema);
+        const NestedModel = Model(mongoose, "NestedModel", nestedSchema);
         await InitModels(client);
 
         expect(Object.entries(mongoose.__models)).toHaveLength(1);
@@ -313,7 +313,7 @@ describe("Mongo model creation", () => {
     });
 
     it("should handle optional foreign keys", async () => {
-        const optionalSchema = new Schema({
+        const optionalSchema = new Schema(mongoose, {
             optionalField: {
                 type: mongoose.Schema.Types.ObjectId,
                 ref: "RelatedModel",
@@ -322,7 +322,7 @@ describe("Mongo model creation", () => {
             },
         });
 
-        const OptionalModel = Model("OptionalModel", optionalSchema);
+        const OptionalModel = Model(mongoose, "OptionalModel", optionalSchema);
         await InitModels(client);
 
         expect(Object.entries(mongoose.__models)).toHaveLength(1);
@@ -332,7 +332,7 @@ describe("Mongo model creation", () => {
     });
 
     it("should process foreign keys when multiple models reference the same model", async () => {
-        const anotherTestSchema = new Schema({
+        const anotherTestSchema = new Schema(mongoose, {
             anotherName: { type: String, required: true },
             related: {
                 type: mongoose.Schema.Types.ObjectId,
@@ -341,9 +341,9 @@ describe("Mongo model creation", () => {
             },
         });
 
-        const RelatedModel = Model("RelatedModel", relatedSchema);
-        const TestModel = Model("TestModel", testSchema);
-        const AnotherTestModel = Model("AnotherTestModel", anotherTestSchema);
+        const RelatedModel = Model(mongoose, "RelatedModel", relatedSchema);
+        const TestModel = Model(mongoose, "TestModel", testSchema);
+        const AnotherTestModel = Model(mongoose, "AnotherTestModel", anotherTestSchema);
         await InitModels(client);
 
         expect(Object.entries(mongoose.__models)).toHaveLength(3);
@@ -354,7 +354,7 @@ describe("Mongo model creation", () => {
     });
 
     it("should handle circular references", async () => {
-        const circularSchemaA = new Schema({
+        const circularSchemaA = new Schema(mongoose, {
             name: { type: String, required: true },
             related: {
                 type: mongoose.Schema.Types.ObjectId,
@@ -363,7 +363,7 @@ describe("Mongo model creation", () => {
             },
         });
     
-        const circularSchemaB = new Schema({
+        const circularSchemaB = new Schema(mongoose, {
             name: { type: String, required: true },
             related: {
                 type: mongoose.Schema.Types.ObjectId,
@@ -372,8 +372,8 @@ describe("Mongo model creation", () => {
             },
         });
     
-        const ModelA = Model("ModelA", circularSchemaA);
-        const ModelB = Model("ModelB", circularSchemaB);
+        const ModelA = Model(mongoose, "ModelA", circularSchemaA);
+        const ModelB = Model(mongoose, "ModelB", circularSchemaB);
         await InitModels(client);
     
         expect(Object.entries(mongoose.__models)).toHaveLength(2);
@@ -410,7 +410,7 @@ describe("Mongo model creation", () => {
     });
 
     it("should error if not given ref in foreign key", async () => {
-        const schemaWithObjectIdFK = new Schema({
+        const schemaWithObjectIdFK = new Schema(mongoose, {
             related: {
                 type: mongoose.Schema.Types.ObjectId,
                 ref: "RelatedModel",
@@ -418,7 +418,7 @@ describe("Mongo model creation", () => {
             },
         });
     
-        const schemaWithEmbeddedDocFK = new Schema({
+        const schemaWithEmbeddedDocFK = new Schema(mongoose, {
             related: {
                 type: mongoose.Schema.Types.ObjectId,
                 required: true,
@@ -438,7 +438,7 @@ describe("Mongo model creation", () => {
             expect(Object.entries(client.__relations)).toHaveLength(1);
             expect(Object.entries(client.__relations["RelatedModel"])).toHaveLength(1);
 
-            const schemaWithEmbeddedDocFKUnlinked = new Schema({
+            const schemaWithEmbeddedDocFKUnlinked = new Schema(mongoose, {
                 related: {
                     type: mongoose.Schema.Types.ObjectId,
                     required: true,
@@ -458,7 +458,7 @@ describe("Mongo model creation", () => {
     });    
 
     it("should create a model and process foreign indexed keys", async () => {
-        const testSchema2 = new Schema({
+        const testSchema2 = new Schema(mongoose, {
             name: { type: String, required: true },
             related: {
                 type: mongoose.Schema.Types.ObjectId,
@@ -468,8 +468,8 @@ describe("Mongo model creation", () => {
             },
         });
 
-        const RelatedModel = Model("RelatedModel", relatedSchema);
-        const TestModel = Model("TestModel", testSchema2);
+        const RelatedModel = Model(mongoose, "RelatedModel", relatedSchema);
+        const TestModel = Model(mongoose, "TestModel", testSchema2);
         await InitModels(client);
 
         expect(mongoose.__models).toHaveProperty("TestModel");
@@ -491,10 +491,10 @@ describe("Mongo model creation", () => {
     });
 
     it("should create with an array of references", async () => {
-        const TestModel = Model("TestModel", new Schema({
+        const TestModel = Model(mongoose, "TestModel", new Schema(mongoose, {
             label: { type: String, required: true },
         }));
-        const RelatedModel = Model("RelatedModel", new Schema({
+        const RelatedModel = Model(mongoose, "RelatedModel", new Schema(mongoose, {
             children: [{ type: mongoose.Schema.Types.ObjectId, ref: "TestModel", required: true }],
             po: [String]
         }));
@@ -510,12 +510,12 @@ describe("Mongo model creation", () => {
 
     it("should handle getActivate error", async () => {
         try{
-            const RelatedModel = Model("RelatedModel", relatedSchema);
+            const RelatedModel = Model(mongoose, "RelatedModel", relatedSchema);
             await InitModels(client);
 
             expect(Object.entries(mongoose.__models)).toHaveLength(1);
 
-            const TestModel = Model(
+            const TestModel = Model(mongoose, 
                 "TestModel", testSchema, undefined, undefined,
             );
 
@@ -534,11 +534,11 @@ describe("Mongo model creation", () => {
     });
 
     it("should handle populateForeignKeyMetadata error", async () => {
-        const RelatedModel = Model("RelatedModel", relatedSchema);
+        const RelatedModel = Model(mongoose, "RelatedModel", relatedSchema);
         await InitModels(client);
 
         try{
-            const TestModel = Model("TestModel", testSchema);
+            const TestModel = Model(mongoose, "TestModel", testSchema);
             await InitModels(client, {
                 "_populateForeignKeyMetadata": async () => {
                     throw new Error("Mocked error")
@@ -553,7 +553,7 @@ describe("Mongo model creation", () => {
             expect(Object.entries(mongoose.__models)).toHaveLength(1);
             expect(mongoose.__models).toHaveProperty("RelatedModel");
 
-            const TestModel = Model("TestModel", testSchema);
+            const TestModel = Model(mongoose, "TestModel", testSchema);
             await InitModels(client);
 
             expect(Object.entries(mongoose.__models)).toHaveLength(2);

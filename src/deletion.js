@@ -100,6 +100,7 @@ export class ForeignKeyDeleter {
             await this._getFilterConditionsAndPaths(models, foreignKeys);
 
         const relatedRecords = await relatedModel.find(filterConditions);
+        console.log(relatedRecords);
         
         if (isArray) {
             return this._handleArrayRecords(

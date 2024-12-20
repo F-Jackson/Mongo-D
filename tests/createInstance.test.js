@@ -17,7 +17,7 @@ describe("Mongo instance creation", () => {
     });
 
     it("should create fk", async () => {
-        testSchema = new Schema({
+        testSchema = new Schema(mongoose, {
             title: { type: String, required: true },
             related: {
                 type: mongoose.Schema.Types.ObjectId,
@@ -34,12 +34,12 @@ describe("Mongo instance creation", () => {
                 }
             },
         });
-        relatedSchema = new Schema({
+        relatedSchema = new Schema(mongoose, {
             title: { type: String, required: true },
         });
 
-        const TestModel = Model("TestModel", testSchema);
-        const RelatedModel = Model("RelatedModel", relatedSchema);
+        const TestModel = Model(mongoose, "TestModel", testSchema);
+        const RelatedModel = Model(mongoose, "RelatedModel", relatedSchema);
         await InitModels(client);
 
         const related = await RelatedModel.Create({ title: "Related" });
@@ -95,7 +95,7 @@ describe("Mongo instance creation", () => {
     });
 
     it("should create array fk", async () => {
-        testSchema = new Schema({
+        testSchema = new Schema(mongoose, {
             title: { type: String, required: true },
             related: {
                 type: [ mongoose.Schema.Types.ObjectId ],
@@ -104,12 +104,12 @@ describe("Mongo instance creation", () => {
                 immutable: true
             },
         });
-        relatedSchema = new Schema({
+        relatedSchema = new Schema(mongoose, {
             title: { type: String, required: true },
         });
 
-        const TestModel = Model("TestModel", testSchema);
-        const RelatedModel = Model("RelatedModel", relatedSchema);
+        const TestModel = Model(mongoose, "TestModel", testSchema);
+        const RelatedModel = Model(mongoose, "RelatedModel", relatedSchema);
 
         await InitModels(client);
 
@@ -162,7 +162,7 @@ describe("Mongo instance creation", () => {
     });
 
     it("should error create fk with fake id", async () => {
-        testSchema = new Schema({
+        testSchema = new Schema(mongoose, {
             title: { type: String, required: true },
             related: {
                 type: mongoose.Schema.Types.ObjectId,
@@ -179,12 +179,12 @@ describe("Mongo instance creation", () => {
                 }
             },
         });
-        relatedSchema = new Schema({
+        relatedSchema = new Schema(mongoose, {
             title: { type: String, required: true },
         });
 
-        const TestModel = Model("TestModel", testSchema);
-        const RelatedModel = Model("RelatedModel", relatedSchema);
+        const TestModel = Model(mongoose, "TestModel", testSchema);
+        const RelatedModel = Model(mongoose, "RelatedModel", relatedSchema);
 
         await InitModels(client);
 
@@ -220,7 +220,7 @@ describe("Mongo instance creation", () => {
     });
 
     it("should error create array fk", async () => {
-        testSchema = new Schema({
+        testSchema = new Schema(mongoose, {
             title: { type: String, required: true },
             related: {
                 type: [ mongoose.Schema.Types.ObjectId ],
@@ -229,12 +229,12 @@ describe("Mongo instance creation", () => {
                 immutable: true
             },
         });
-        relatedSchema = new Schema({
+        relatedSchema = new Schema(mongoose, {
             title: { type: String, required: true },
         });
 
-        const TestModel = Model("TestModel", testSchema);
-        const RelatedModel = Model("RelatedModel", relatedSchema);
+        const TestModel = Model(mongoose, "TestModel", testSchema);
+        const RelatedModel = Model(mongoose, "RelatedModel", relatedSchema);
 
         await InitModels(client);
 

@@ -15,10 +15,10 @@ describe("Mongo model Delete", () => {
     }, 0);
 
     it("should delete with required", async () => {
-        const relatedSchema = new Schema({
+        const relatedSchema = new Schema(mongoose, {
             title: { type: String, required: true },
         });
-        const testSchema = new Schema({
+        const testSchema = new Schema(mongoose, {
             name: { type: String, required: true },
             related: {
                 type: mongoose.Schema.Types.ObjectId,
@@ -27,8 +27,8 @@ describe("Mongo model Delete", () => {
             },
         });
 
-        const RelatedModel = Model("RelatedModel", relatedSchema);
-        const TestModel = Model("TestModel", testSchema);
+        const RelatedModel = Model(mongoose, "RelatedModel", relatedSchema);
+        const TestModel = Model(mongoose, "TestModel", testSchema);
 
         await InitModels(client);
 
@@ -54,10 +54,10 @@ describe("Mongo model Delete", () => {
     }, 0);
 
     it("should nested delete with required", async () => {
-        const relatedSchema = new Schema({
+        const relatedSchema = new Schema(mongoose, {
             title: { type: String, required: true },
         });
-        const testSchema = new Schema({
+        const testSchema = new Schema(mongoose, {
             name: { type: String, required: true },
             nested: {
                 related: {
@@ -68,8 +68,8 @@ describe("Mongo model Delete", () => {
             },
         });
 
-        const RelatedModel = Model("RelatedModel", relatedSchema);
-        const TestModel = Model("TestModel", testSchema);
+        const RelatedModel = Model(mongoose, "RelatedModel", relatedSchema);
+        const TestModel = Model(mongoose, "TestModel", testSchema);
 
         await InitModels(client);
 
@@ -99,10 +99,10 @@ describe("Mongo model Delete", () => {
     }, 0);
 
     it("should array delete with required", async () => {
-        const relatedSchema = new Schema({
+        const relatedSchema = new Schema(mongoose, {
             title: { type: String, required: true },
         });
-        const testSchema = new Schema({
+        const testSchema = new Schema(mongoose, {
             name: { type: String, required: true },
             related: {
                 type: [ mongoose.Schema.Types.ObjectId ],
@@ -111,8 +111,8 @@ describe("Mongo model Delete", () => {
             },
         });
 
-        const RelatedModel = Model("RelatedModel", relatedSchema);
-        const TestModel = Model("TestModel", testSchema);
+        const RelatedModel = Model(mongoose, "RelatedModel", relatedSchema);
+        const TestModel = Model(mongoose, "TestModel", testSchema);
 
         await InitModels(client);
 
@@ -147,10 +147,10 @@ describe("Mongo model Delete", () => {
     }, 0);
 
     it("should delete without required", async () => {
-        const relatedSchema = new Schema({
+        const relatedSchema = new Schema(mongoose, {
             title: { type: String, required: true },
         });
-        const testSchema = new Schema({
+        const testSchema = new Schema(mongoose, {
             name: { type: String, required: true },
             related: {
                 type: mongoose.Schema.Types.ObjectId,
@@ -158,8 +158,8 @@ describe("Mongo model Delete", () => {
             },
         });
 
-        const RelatedModel = Model("RelatedModel", relatedSchema);
-        const TestModel = Model("TestModel", testSchema);
+        const RelatedModel = Model(mongoose, "RelatedModel", relatedSchema);
+        const TestModel = Model(mongoose, "TestModel", testSchema);
 
         await InitModels(client);
 
@@ -187,10 +187,10 @@ describe("Mongo model Delete", () => {
     }, 0);
 
     it("should nested delete without required", async () => {
-        const relatedSchema = new Schema({
+        const relatedSchema = new Schema(mongoose, {
             title: { type: String, required: true },
         });
-        const testSchema = new Schema({
+        const testSchema = new Schema(mongoose, {
             name: { type: String, required: true },
             nested: {
                 related: {
@@ -200,8 +200,8 @@ describe("Mongo model Delete", () => {
             },
         });
 
-        const RelatedModel = Model("RelatedModel", relatedSchema);
-        const TestModel = Model("TestModel", testSchema);
+        const RelatedModel = Model(mongoose, "RelatedModel", relatedSchema);
+        const TestModel = Model(mongoose, "TestModel", testSchema);
 
         await InitModels(client);
 
@@ -233,10 +233,10 @@ describe("Mongo model Delete", () => {
     }, 0);
 
     it("should array delete without required", async () => {
-        const relatedSchema = new Schema({
+        const relatedSchema = new Schema(mongoose, {
             title: { type: String, required: true },
         });
-        const testSchema = new Schema({
+        const testSchema = new Schema(mongoose, {
             name: { type: String, required: true },
             related: {
                 type: [ mongoose.Schema.Types.ObjectId ],
@@ -244,8 +244,8 @@ describe("Mongo model Delete", () => {
             },
         });
 
-        const RelatedModel = Model("RelatedModel", relatedSchema);
-        const TestModel = Model("TestModel", testSchema);
+        const RelatedModel = Model(mongoose, "RelatedModel", relatedSchema);
+        const TestModel = Model(mongoose, "TestModel", testSchema);
 
         await InitModels(client);
 
@@ -280,10 +280,10 @@ describe("Mongo model Delete", () => {
     }, 0);
 
     it("should delete with immutable and delete", async () => {
-        const relatedSchema = new Schema({
+        const relatedSchema = new Schema(mongoose, {
             title: { type: String, required: true },
         });
-        const testSchema = new Schema({
+        const testSchema = new Schema(mongoose, {
             name: { type: String, required: true },
             related: {
                 type: mongoose.Schema.Types.ObjectId,
@@ -292,8 +292,8 @@ describe("Mongo model Delete", () => {
             },
         });
 
-        const RelatedModel = Model("RelatedModel", relatedSchema);
-        const TestModel = Model("TestModel", testSchema);
+        const RelatedModel = Model(mongoose, "RelatedModel", relatedSchema);
+        const TestModel = Model(mongoose, "TestModel", testSchema);
 
         await InitModels(client);
 
@@ -319,10 +319,10 @@ describe("Mongo model Delete", () => {
     }, 0);
 
     it("should nested delete with immutable and delete", async () => {
-        const relatedSchema = new Schema({
+        const relatedSchema = new Schema(mongoose, {
             title: { type: String, required: true },
         });
-        const testSchema = new Schema({
+        const testSchema = new Schema(mongoose, {
             name: { type: String, required: true },
             nested: {
                 related: {
@@ -333,8 +333,8 @@ describe("Mongo model Delete", () => {
             },
         });
 
-        const RelatedModel = Model("RelatedModel", relatedSchema);
-        const TestModel = Model("TestModel", testSchema);
+        const RelatedModel = Model(mongoose, "RelatedModel", relatedSchema);
+        const TestModel = Model(mongoose, "TestModel", testSchema);
 
         await InitModels(client);
 
@@ -364,10 +364,10 @@ describe("Mongo model Delete", () => {
     }, 0);
 
     it("should array delete with immutable and delete", async () => {
-        const relatedSchema = new Schema({
+        const relatedSchema = new Schema(mongoose, {
             title: { type: String, required: true },
         });
-        const testSchema = new Schema({
+        const testSchema = new Schema(mongoose, {
             name: { type: String, required: true },
             related: {
                 type: [ mongoose.Schema.Types.ObjectId ],
@@ -376,8 +376,8 @@ describe("Mongo model Delete", () => {
             },
         });
 
-        const RelatedModel = Model("RelatedModel", relatedSchema);
-        const TestModel = Model("TestModel", testSchema);
+        const RelatedModel = Model(mongoose, "RelatedModel", relatedSchema);
+        const TestModel = Model(mongoose, "TestModel", testSchema);
 
         await InitModels(client);
 
@@ -416,10 +416,10 @@ describe("Mongo model Delete", () => {
     }, 0);
 
     it("should delete with immutable and keep", async () => {
-        const relatedSchema = new Schema({
+        const relatedSchema = new Schema(mongoose, {
             title: { type: String, required: true },
         });
-        const testSchema = new Schema({
+        const testSchema = new Schema(mongoose, {
             name: { type: String, required: true },
             nested: {
                 related: {
@@ -430,8 +430,8 @@ describe("Mongo model Delete", () => {
             },
         });
 
-        const RelatedModel = Model("RelatedModel", relatedSchema);
-        const TestModel = Model("TestModel", testSchema);
+        const RelatedModel = Model(mongoose, "RelatedModel", relatedSchema);
+        const TestModel = Model(mongoose, "TestModel", testSchema);
 
         await InitModels(client);
 
@@ -463,10 +463,10 @@ describe("Mongo model Delete", () => {
     }, 0);
 
     it("should nested delete with immutable and delete", async () => {
-        const relatedSchema = new Schema({
+        const relatedSchema = new Schema(mongoose, {
             title: { type: String, required: true },
         });
-        const testSchema = new Schema({
+        const testSchema = new Schema(mongoose, {
             name: { type: String, required: true },
             nested: {
                 related: {
@@ -477,8 +477,8 @@ describe("Mongo model Delete", () => {
             },
         });
 
-        const RelatedModel = Model("RelatedModel", relatedSchema);
-        const TestModel = Model("TestModel", testSchema);
+        const RelatedModel = Model(mongoose, "RelatedModel", relatedSchema);
+        const TestModel = Model(mongoose, "TestModel", testSchema);
 
         await InitModels(client);
 
@@ -510,10 +510,10 @@ describe("Mongo model Delete", () => {
     }, 0);
 
     it("should array delete with immutable and keep", async () => {
-        const relatedSchema = new Schema({
+        const relatedSchema = new Schema(mongoose, {
             title: { type: String, required: true },
         });
-        const testSchema = new Schema({
+        const testSchema = new Schema(mongoose, {
             name: { type: String, required: true },
             related: {
                 type: [ mongoose.Schema.Types.ObjectId ],
@@ -522,8 +522,8 @@ describe("Mongo model Delete", () => {
             },
         });
 
-        const RelatedModel = Model("RelatedModel", relatedSchema);
-        const TestModel = Model("TestModel", testSchema);
+        const RelatedModel = Model(mongoose, "RelatedModel", relatedSchema);
+        const TestModel = Model(mongoose, "TestModel", testSchema);
 
         await InitModels(client);
 
@@ -562,10 +562,10 @@ describe("Mongo model Delete", () => {
     }, 0);
 
     it("should nested and array delete with required", async () => {
-        const relatedSchema = new Schema({
+        const relatedSchema = new Schema(mongoose, {
             title: { type: String, required: true },
         });
-        const testSchema = new Schema({
+        const testSchema = new Schema(mongoose, {
             name: { type: String, required: true },
             nested: {
                 related: {
@@ -576,8 +576,8 @@ describe("Mongo model Delete", () => {
             },
         });
 
-        const RelatedModel = Model("RelatedModel", relatedSchema);
-        const TestModel = Model("TestModel", testSchema);
+        const RelatedModel = Model(mongoose, "RelatedModel", relatedSchema);
+        const TestModel = Model(mongoose, "TestModel", testSchema);
 
         await InitModels(client);
 

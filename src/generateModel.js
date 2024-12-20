@@ -32,13 +32,7 @@ export class ForeignKeyProcessor {
         const { ref, isArray } = await this._extractFieldTypeAndRef(obj);
         if (!ref) return;
 
-        const metadata = await this._createForeignKeyMetadata(
-            path, 
-            obj, 
-            isArray,
-            false,
-            false
-        );
+        const metadata = await this._createForeignKeyMetadata(path, obj, isArray);
         await this._addForeignKeyMetadata(ref, metadata);
     };
 
@@ -58,20 +52,12 @@ export class ForeignKeyProcessor {
         return { type, ref, isArray };
     };
 
-    _createForeignKeyMetadata = async (
-        path, 
-        obj, 
-        isArray,
-        isSchema,
-        isSchemaRequired
-    ) => ({
+    _createForeignKeyMetadata = async (path, obj, isArray) => ({
         path: path.split("."),
         required: obj.required || false,
         immutable: obj.immutable || false,
         unique: obj.unique || false,
         array: isArray,
-        isSchema,
-        isSchemaRequired
     });
 
     _addForeignKeyMetadata = async (ref, metadata) => {

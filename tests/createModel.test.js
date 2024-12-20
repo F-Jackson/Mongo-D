@@ -46,8 +46,6 @@ describe("Mongo model creation", () => {
                     immutable: false,
                     unique: false,
                     array: false,
-                    isSchema: false,
-                    isSchemaRequired: false
                 }
             ]
         });
@@ -73,8 +71,6 @@ describe("Mongo model creation", () => {
                         immutable: false,
                         unique: false,
                         array: false,
-                        isSchema: false,
-                        isSchemaRequired: false
                     }
                 ]
             });
@@ -123,8 +119,6 @@ describe("Mongo model creation", () => {
                     immutable: false,
                     unique: false,
                     array: false,
-                    isSchema: false,
-                    isSchemaRequired: false
                 },
                 {
                     path: ["related2"],
@@ -132,8 +126,6 @@ describe("Mongo model creation", () => {
                     immutable: false,
                     unique: false,
                     array: false,
-                    isSchema: false,
-                    isSchemaRequired: false
                 },
             ]
         });
@@ -308,8 +300,6 @@ describe("Mongo model creation", () => {
                     immutable: true,
                     unique: true,
                     array: false,
-                    isSchema: false,
-                    isSchemaRequired: false
                 },
                 {
                     path: ["nestedField2" , "po2", "subField"],
@@ -317,8 +307,6 @@ describe("Mongo model creation", () => {
                     immutable: false,
                     unique: false,
                     array: true,
-                    isSchema: false,
-                    isSchemaRequired: false
                 },
             ]
         });
@@ -402,9 +390,7 @@ describe("Mongo model creation", () => {
                     required: true,
                     immutable: false,
                     unique: false,
-                    array: false,
-                    isSchema: false,
-                    isSchemaRequired: false
+                    array: false
                 },
             ]
         });
@@ -417,9 +403,7 @@ describe("Mongo model creation", () => {
                     required: true,
                     immutable: false,
                     unique: false,
-                    array: false,
-                    isSchema: false,
-                    isSchemaRequired: false
+                    array: false
                 },
             ]
         });
@@ -501,8 +485,6 @@ describe("Mongo model creation", () => {
                     immutable: false,
                     unique: false,
                     array: false,
-                    isSchema: false,
-                    isSchemaRequired: false
                 }
             ]
         });
@@ -587,8 +569,6 @@ describe("Mongo model creation", () => {
                         immutable: false,
                         unique: false,
                         array: false,
-                        isSchema: false,
-                        isSchemaRequired: false
                     }
                 ]
             });

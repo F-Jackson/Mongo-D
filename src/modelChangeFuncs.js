@@ -40,6 +40,6 @@ export const changeDelete = async(mongoModel, mongoD) => {
             mongoModel, mongoD
         );
 
-        await deleter.delete(conditions, options);
+        return await deleter.delete(conditions, options);
     };
 };

@@ -48,7 +48,7 @@ describe("Mongo model Delete", () => {
 
         expect(deletedCount).toEqual(1);
         expect(relatedCount).toEqual(2);
-        expect(records.excluded).toHaveLength(2);
+        expect(records["TestModel"].excluded).toHaveLength(2);
 
         const testes = await TestModel.find({});
         expect(testes).toHaveLength(0);

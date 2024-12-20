@@ -167,10 +167,10 @@ export class ForeignKeyDeleter {
 
         if (!models.length) return;
 
-        const records = await this._processRelations(relations, models, dealWithImmutable);
+        const [ relatedCount, records ] = await this._processRelations(relations, models, dealWithImmutable);
 
         const result = await this.mongoModel.deleteMany(conditions);
 
-        return [ result.deletedCount, ...records];
+        return [ result.deletedCount, relatedCount, records];
     }
 }

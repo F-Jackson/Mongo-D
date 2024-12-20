@@ -4,13 +4,13 @@ import { ForeignKeyCreator } from "./creation.js";
 import { ForeignKeyDeleter } from "./deletion.js";
 
 
-export const foreignKeyProcess = async(mongoModel, mongoD) => {
+export const foreignKeyProcess = async(mongoModel, mongoD, __mocks = null) => {
     const foreignKeyProcessor = new ForeignKeyProcessor(
         mongoModel,
         mongoD
     );
     
-    //await foreignKeyProcessor.__mocktest(__mocks);
+    if (__mocks) await foreignKeyProcessor.__mocktest(__mocks);
 
     try {
         await foreignKeyProcessor.processForeignKeys();

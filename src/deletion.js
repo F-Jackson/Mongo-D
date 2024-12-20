@@ -96,7 +96,8 @@ export class ForeignKeyDeleter {
         relatedModelName, 
         foreignKeys, 
         models, 
-        dealWithImmutable
+        dealWithImmutable,
+        records
     ) {
         const metadata = { updated: [], excluded: [] };
 
@@ -128,7 +129,7 @@ export class ForeignKeyDeleter {
             );
         }
 
-        return metadata;
+        records[relatedModelName] = metadata;
     }
 
     async _processRelations(
@@ -136,11 +137,21 @@ export class ForeignKeyDeleter {
         models, 
         dealWithImmutable
     ) {
+        const records = {};
+
         const promises = Object.entries(relations).map(([relatedModelName, foreignKeys]) => {
-            return this._processSingleRelation(relatedModelName, foreignKeys, models, dealWithImmutable);
+            return this._processSingleRelation(
+                relatedModelName, 
+                foreignKeys, 
+                models, 
+                dealWithImmutable,
+                records
+            );
         });
 
         await Promise.all(promises);
+
+        console.log(records);
     }
 
     async delete(

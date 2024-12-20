@@ -140,11 +140,15 @@ export class ForeignKeyDeleter {
         models, 
         dealWithImmutable
     ) {
+        const records = {};
+
         const promises = Object.entries(relations).map(([relatedModelName, foreignKeys]) => {
-            return this._processSingleRelation(relatedModelName, foreignKeys, models, dealWithImmutable);
+            records[relatedModelName] = this._processSingleRelation(relatedModelName, foreignKeys, models, dealWithImmutable);
         });
 
         await Promise.all(promises);
+
+        return records;
     }
 
     async delete(
@@ -156,8 +160,10 @@ export class ForeignKeyDeleter {
 
         if (!models.length) return;
 
-        await this._processRelations(relations, models, dealWithImmutable);
+        const records = await this._processRelations(relations, models, dealWithImmutable);
 
         await this.mongoModel.deleteMany(conditions);
+
+        return records;
     }
 }

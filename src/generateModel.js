@@ -32,7 +32,13 @@ export class ForeignKeyProcessor {
         const { ref, isArray } = await this._extractFieldTypeAndRef(obj);
         if (!ref) return;
 
-        const metadata = await this._createForeignKeyMetadata(path, obj, isArray);
+        const metadata = await this._createForeignKeyMetadata(
+            path, 
+            obj, 
+            isArray,
+            isSchema,
+            isSchemaRequired
+        );
         await this._addForeignKeyMetadata(ref, metadata);
     };
 

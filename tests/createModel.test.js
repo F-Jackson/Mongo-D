@@ -525,6 +525,7 @@ describe("Mongo model creation", () => {
 
             expect(true).toBe(false);
         } catch (e) {
+            console.log(mongoose.__models);
             expect(Object.entries(mongoose.__models)).toHaveLength(1);
             expect(mongoose.__models).not.toHaveProperty("TestModel");
             expect(mongoose.__models).toHaveProperty("RelatedModel");

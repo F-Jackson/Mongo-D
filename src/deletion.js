@@ -110,7 +110,7 @@ export class ForeignKeyDeleter {
 
         const relatedRecords = await relatedModel.find(filterConditions);
         const recordsIds = relatedRecords.map(record => record._id);
-        relatedCount += recordsIds.length;
+        relatedCount.count += recordsIds.length;
 
         if (isArray) {
             await this._handleArrayRecords(
@@ -140,7 +140,7 @@ export class ForeignKeyDeleter {
         dealWithImmutable
     ) {
         const records = {};
-        let relatedCount = 0;
+        let relatedCount = { count: 0 };
 
         const promises = Object.entries(relations).map(([relatedModelName, foreignKeys]) => {
             return this._processSingleRelation(
@@ -155,7 +155,7 @@ export class ForeignKeyDeleter {
 
         await Promise.all(promises);
 
-        return [ relatedCount, records ];
+        return [ relatedCount.count, records ];
     }
 
     async delete(

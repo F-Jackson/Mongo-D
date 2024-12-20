@@ -52,12 +52,20 @@ export class ForeignKeyProcessor {
         return { type, ref, isArray };
     };
 
-    _createForeignKeyMetadata = async (path, obj, isArray) => ({
+    _createForeignKeyMetadata = async (
+        path, 
+        obj, 
+        isArray,
+        isSchema,
+        isSchemaRequired
+    ) => ({
         path: path.split("."),
         required: obj.required || false,
         immutable: obj.immutable || false,
         unique: obj.unique || false,
         array: isArray,
+        isSchema,
+        isSchemaRequired
     });
 
     _addForeignKeyMetadata = async (ref, metadata) => {

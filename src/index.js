@@ -14,15 +14,18 @@ class Schema {
         const originalPath = mongoSchema.prototype.path;
 
         mongoSchema.prototype.path = function (path, obj) {
-            if (!obj) {
+            if (!obj || !obj.type) {
                 return originalPath.call(this, path);
             }
+
+            if (obj.type instanceof mongoose.Schema) console.log(path, obj);
 
             properties[path] = obj;
             return originalPath.call(this, path, obj);
         };
 
         const schema = new mongoSchema(obj, options);
+
         schema.__properties = properties;
 
         return schema;

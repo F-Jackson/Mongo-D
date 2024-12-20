@@ -12,7 +12,7 @@ describe("Mongo model creation", () => {
     beforeEach(async () => {
         client = await cleanDb();
 
-        relatedSchema = new Schema(mongoose, {
+        /*relatedSchema = new Schema(mongoose, {
             title: { type: String, required: true },
         });
         testSchema = new Schema(mongoose, {
@@ -22,7 +22,7 @@ describe("Mongo model creation", () => {
                 ref: "RelatedModel",
                 required: true,
             },
-        });
+        });*/
     });
 
     afterEach(async () => {
@@ -587,8 +587,10 @@ describe("Mongo model creation", () => {
         const nestedSchema = new Schema(mongoose, {
             title: { type: String, required: true },
             nested: {
-                type: nestSchema,
-                required: true,
+                nested2: {
+                    type: nestSchema,
+                    required: true,
+                }
             }
         });
 /*

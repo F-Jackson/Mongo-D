@@ -110,14 +110,14 @@ export class ForeignKeyDeleter {
         const recordsIds = relatedRecords.map(record => record._id);
         
         if (isArray) {
-            return this._handleArrayRecords(
+            await this._handleArrayRecords(
                 relatedModel,
                 filterConditions,
                 recordsIds,
                 metadata
             );
         } else {
-            return this._handleRequiredOrImmutableRecords(
+            await this._handleRequiredOrImmutableRecords(
                 relatedModel,
                 updatePaths,
                 isRequired,
@@ -127,6 +127,8 @@ export class ForeignKeyDeleter {
                 metadata
             );
         }
+
+        return metadata;
     }
 
     async _processRelations(

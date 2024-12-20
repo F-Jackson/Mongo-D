@@ -44,7 +44,11 @@ describe("Mongo model Delete", () => {
             }
         ]);
         expect(tests).toHaveLength(2);
-        await RelatedModel.Delete({ _id: related._id });
+        const [ deletedCount, relatedCount, records ] = await RelatedModel.Delete({ _id: related._id });
+
+        expect(deletedCount).toEqual(1);
+        expect(relatedCount).toEqual(2);
+        expect(records.excluded).toHaveLength(2);
 
         const testes = await TestModel.find({});
         expect(testes).toHaveLength(0);

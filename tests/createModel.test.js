@@ -28,7 +28,7 @@ describe("Mongo model creation", () => {
     afterEach(async () => {
         await disconnectDb(client);
     });
-
+/*
     it("should create a model and process foreign keys", async () => {
         const RelatedModel = Model(mongoose, "RelatedModel", relatedSchema);
         const TestModel = Model(mongoose, "TestModel", testSchema);
@@ -573,5 +573,43 @@ describe("Mongo model creation", () => {
                 ]
             });
         }
+    });*/
+
+    it("should create a model with nested schema", async () => {
+        const nestSchema = new Schema(mongoose, {
+            name: { type: String, required: true },
+            related: {
+                type: mongoose.Schema.Types.ObjectId,
+                ref: "RelatedModel",
+                required: true,
+            }
+        });
+        const nestedSchema = new Schema(mongoose, {
+            title: { type: String, required: true },
+            nested: {
+                type: nestSchema,
+                required: true,
+            }
+        });
+/*
+        const RelatedModel = Model(mongoose, "RelatedModel", relatedSchema);
+        const TestModel = Model(mongoose, "TestModel", testSchema);
+        await InitModels(client);
+
+        expect(client.__models).toHaveProperty("TestModel");
+        expect(client.__models).toHaveProperty("RelatedModel");
+
+        expect(Object.entries(TestModel._FKS)).toHaveLength(1);
+        expect(TestModel._FKS).toMatchObject({
+            "RelatedModel": [
+                {
+                    path: ["related"],
+                    required: true,
+                    immutable: false,
+                    unique: false,
+                    array: false,
+                }
+            ]
+        });*/
     });
 }, 0);

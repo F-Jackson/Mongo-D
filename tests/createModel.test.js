@@ -510,14 +510,12 @@ describe("Mongo model creation", () => {
 
     it("should handle getActivate error", async () => {
         try{
-            const RelatedModel = Model(mongoose, "RelatedModel", relatedSchema);
+            Model(mongoose, "RelatedModel", relatedSchema);
             await InitModels(client);
 
             expect(Object.entries(mongoose.__models)).toHaveLength(1);
 
-            const TestModel = Model(mongoose, 
-                "TestModel", testSchema, undefined, undefined,
-            );
+            Model(mongoose, "TestModel", testSchema);
 
             await InitModels(client, {
                 "_getActiveForeignKeys": async () => {
@@ -534,11 +532,11 @@ describe("Mongo model creation", () => {
     });
 
     it("should handle populateForeignKeyMetadata error", async () => {
-        const RelatedModel = Model(mongoose, "RelatedModel", relatedSchema);
+        Model(mongoose, "RelatedModel", relatedSchema);
         await InitModels(client);
 
         try{
-            const TestModel = Model(mongoose, "TestModel", testSchema);
+            Model(mongoose, "TestModel", testSchema);
             await InitModels(client, {
                 "_populateForeignKeyMetadata": async () => {
                     throw new Error("Mocked error")

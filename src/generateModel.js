@@ -36,8 +36,8 @@ export class ForeignKeyProcessor {
             path, 
             obj, 
             isArray,
-            true,
-            true
+            false,
+            false
         );
         await this._addForeignKeyMetadata(ref, metadata);
     };

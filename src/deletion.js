@@ -142,10 +142,15 @@ export class ForeignKeyDeleter {
     ) {
         const records = {};
 
-        const promises = Object.entries(relations).map(([relatedModelName, foreignKeys]) => {
-            records[relatedModelName] = this._processSingleRelation(relatedModelName, foreignKeys, models, dealWithImmutable);
+        const promises = Object.entries(relations).map(async ([relatedModelName, foreignKeys]) => {
+            records[relatedModelName] = await this._processSingleRelation(
+                relatedModelName, 
+                foreignKeys, 
+                models, 
+                dealWithImmutable
+            );
         });
-
+    
         await Promise.all(promises);
 
         return records;

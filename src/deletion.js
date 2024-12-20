@@ -36,21 +36,23 @@ export class ForeignKeyDeleter {
 
     async _handleRequiredOrImmutableRecords(
         model, 
-        filterConditions, 
-        relatedRecords, 
+        filterConditions,
         isRequired, 
         isImmutable, 
-        dealWithImmutable
+        dealWithImmutable,
+        recordsIds,
+        metadata
     ) {
-        const relatedIds = relatedRecords.map(record => record._id);
 
         if (isRequired || (isImmutable && dealWithImmutable === "delete")) {
-            return model.deleteMany({ _id: { $in: relatedIds } });
+            model.deleteMany({ _id: { $in: recordsIds } });
+            metadata.excluded.push(...recordsIds);
         } else if (!isImmutable || dealWithImmutable === "keep") {
-            return model.updateMany(
-                { _id: { $in: relatedIds } },
+            model.updateMany(
+                { _id: { $in: recordsIds } },
                 { $set: filterConditions }
             );
+            metadata.updated.push(...recordsIds);
         } else {
             throw new Error('`dealWithImmutable` must be either "keep" or "delete".');
         }
@@ -59,7 +61,9 @@ export class ForeignKeyDeleter {
     async _handleArrayRecords(
         model, 
         filterConditions, 
-        relatedRecords
+        relatedRecords,
+        recordsIds,
+        metadata
     ) {
         const updateFilters = await Promise.all(
             relatedRecords.map(async (md) => {
@@ -84,7 +88,8 @@ export class ForeignKeyDeleter {
             })
         );
 
-        return await model.bulkWrite(updateFilters);
+        await model.bulkWrite(updateFilters);
+        metadata.updated.push(...recordsIds);
     }
 
     async _processSingleRelation(
@@ -93,6 +98,11 @@ export class ForeignKeyDeleter {
         models, 
         dealWithImmutable
     ) {
+        const metadata = {
+            updated: [],
+            excluded: []
+        };
+
         const relatedModel = this.mongoD.__models[relatedModelName];
         if (!relatedModel._FKS) return;
 
@@ -100,23 +110,29 @@ export class ForeignKeyDeleter {
             await this._getFilterConditionsAndPaths(models, foreignKeys);
 
         const relatedRecords = await relatedModel.find(filterConditions);
-        
+        const recordsIds =  relatedRecords.map(record => record._id);
+
         if (isArray) {
-            return this._handleArrayRecords(
+            this._handleArrayRecords(
                 relatedModel,
                 filterConditions,
-                relatedRecords
+                relatedRecords,
+                recordsIds,
+                metadata
             );
         } else {
-            return this._handleRequiredOrImmutableRecords(
+            this._handleRequiredOrImmutableRecords(
                 relatedModel,
                 updatePaths,
-                relatedRecords,
                 isRequired,
                 isImmutable,
                 dealWithImmutable,
+                recordsIds,
+                metadata
             );
         }
+
+        return metadata;
     }
 
     async _processRelations(

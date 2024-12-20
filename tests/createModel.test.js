@@ -28,7 +28,7 @@ describe("Mongo model creation", () => {
     afterEach(async () => {
         await disconnectDb(client);
     });
-/*
+
     it("should create a model and process foreign keys", async () => {
         const RelatedModel = Model(mongoose, "RelatedModel", relatedSchema);
         const TestModel = Model(mongoose, "TestModel", testSchema);
@@ -506,7 +506,7 @@ describe("Mongo model creation", () => {
         expect(Object.entries(client.__relations)).toHaveLength(0);
 
         expect(RelatedModel).not.toHaveProperty("_FKS");
-    });*/
+    });
 
     it("should handle getActivate error", async () => {
         try{
@@ -531,7 +531,7 @@ describe("Mongo model creation", () => {
             expect(mongoose.__models).toHaveProperty("RelatedModel");
         }
     });
-/*
+
     it("should handle populateForeignKeyMetadata error", async () => {
         Model(mongoose, "RelatedModel", relatedSchema);
         await InitModels(client);
@@ -573,5 +573,5 @@ describe("Mongo model creation", () => {
                 ]
             });
         }
-    });*/
+    });
 }, 0);

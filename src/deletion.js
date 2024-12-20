@@ -36,23 +36,23 @@ export class ForeignKeyDeleter {
 
     async _handleRequiredOrImmutableRecords(
         model, 
-        filterConditions,
+        filterConditions, 
+        recordsIds, 
         isRequired, 
         isImmutable, 
         dealWithImmutable,
-        recordsIds,
-        metadata
+        metaData
     ) {
 
         if (isRequired || (isImmutable && dealWithImmutable === "delete")) {
-            model.deleteMany({ _id: { $in: recordsIds } });
-            metadata.excluded.push(...recordsIds);
+            metaData.excluded.push(...recordsIds);
+            return model.deleteMany({ _id: { $in: recordsIds } });
         } else if (!isImmutable || dealWithImmutable === "keep") {
-            model.updateMany(
+            metaData.updated.push(...recordsIds);
+            return model.updateMany(
                 { _id: { $in: recordsIds } },
                 { $set: filterConditions }
             );
-            metadata.updated.push(...recordsIds);
         } else {
             throw new Error('`dealWithImmutable` must be either "keep" or "delete".');
         }
@@ -63,8 +63,10 @@ export class ForeignKeyDeleter {
         filterConditions, 
         relatedRecords,
         recordsIds,
-        metadata
+        metaData
     ) {
+        metaData.updated.push(...recordsIds);
+
         const updateFilters = await Promise.all(
             relatedRecords.map(async (md) => {
                 const updateFilter = {
@@ -88,8 +90,7 @@ export class ForeignKeyDeleter {
             })
         );
 
-        await model.bulkWrite(updateFilters);
-        metadata.updated.push(...recordsIds);
+        return await model.bulkWrite(updateFilters);
     }
 
     async _processSingleRelation(
@@ -98,7 +99,7 @@ export class ForeignKeyDeleter {
         models, 
         dealWithImmutable
     ) {
-        const metadata = {
+        const metaData = {
             updated: [],
             excluded: []
         };
@@ -110,29 +111,27 @@ export class ForeignKeyDeleter {
             await this._getFilterConditionsAndPaths(models, foreignKeys);
 
         const relatedRecords = await relatedModel.find(filterConditions);
-        const recordsIds =  relatedRecords.map(record => record._id);
-
+        const recordsIds = relatedRecords.map(record => record._id);
+        
         if (isArray) {
-            this._handleArrayRecords(
+            return this._handleArrayRecords(
                 relatedModel,
                 filterConditions,
                 relatedRecords,
                 recordsIds,
-                metadata
+                metaData
             );
         } else {
-            this._handleRequiredOrImmutableRecords(
+            return this._handleRequiredOrImmutableRecords(
                 relatedModel,
                 updatePaths,
+                recordsIds,
                 isRequired,
                 isImmutable,
                 dealWithImmutable,
-                recordsIds,
-                metadata
+                metaData
             );
         }
-
-        return metadata;
     }
 
     async _processRelations(
@@ -140,20 +139,11 @@ export class ForeignKeyDeleter {
         models, 
         dealWithImmutable
     ) {
-        const records = {};
-
-        const promises = Object.entries(relations).map(async ([relatedModelName, foreignKeys]) => {
-            records[relatedModelName] = await this._processSingleRelation(
-                relatedModelName, 
-                foreignKeys, 
-                models, 
-                dealWithImmutable
-            );
+        const promises = Object.entries(relations).map(([relatedModelName, foreignKeys]) => {
+            return this._processSingleRelation(relatedModelName, foreignKeys, models, dealWithImmutable);
         });
-    
-        await Promise.all(promises);
 
-        return records;
+        await Promise.all(promises);
     }
 
     async delete(
@@ -165,10 +155,8 @@ export class ForeignKeyDeleter {
 
         if (!models.length) return;
 
-        const records = await this._processRelations(relations, models, dealWithImmutable);
+        await this._processRelations(relations, models, dealWithImmutable);
 
         await this.mongoModel.deleteMany(conditions);
-
-        return records;
     }
 }

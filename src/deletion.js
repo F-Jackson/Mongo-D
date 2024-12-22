@@ -168,6 +168,12 @@ export class ForeignKeyDeleter {
         return [ relatedCount.count, records ];
     }
 
+    async _setKwargs(kwargs) {
+        if (!kwargs.dealWithImmutable) kwargs.dealWithImmutable = "delete";
+        if (!kwargs.autoCommitTransaction) kwargs.autoCommitTransaction = true;
+        if (!kwargs.direction) kwargs.direction = "foward";
+    }
+
     async commit() {
         try {
             await this.session.commitTransaction();
@@ -181,9 +187,12 @@ export class ForeignKeyDeleter {
 
     async delete(
         conditions,
-        dealWithImmutable = "delete",
-        autoCommitTransaction = true
+        kwargs
     ) {
+        if (!kwargs) kwargs = {};
+        if (typeof kwargs !== "object") throw new Error("Invalid kwargs: must be an object");
+        await this._setKwargs(kwargs);
+
         await _initializeSession();
 
         const relations = this.mongoD.__relations[this.modelName];

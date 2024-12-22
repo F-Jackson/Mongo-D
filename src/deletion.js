@@ -4,14 +4,6 @@ export class ForeignKeyDeleter {
         this.modelName = mongoModel.modelName;
         this.mongoD = mongoD;
         this.session = null;
-
-        this session = await this.mongoD.startSession();
-        session.startTransaction();
-    }
-
-    async _initializeSession() {
-        this.session = await this.mongoD.startSession();
-        this.session.startTransaction();
     }
 
     async _getFilterConditionsAndPaths(
@@ -174,6 +166,11 @@ export class ForeignKeyDeleter {
         if (!kwargs.direction) kwargs.direction = "foward";
     }
 
+    async _initializeSession() {
+        this.session = await this.mongoD.startSession();
+        this.session.startTransaction();
+    }
+
     async commit() {
         try {
             await this.session.commitTransaction();
@@ -195,17 +192,22 @@ export class ForeignKeyDeleter {
 
         await _initializeSession();
 
-        const relations = this.mongoD.__relations[this.modelName];
-        const models = await this.mongoModel.find(conditions);
-
-        if (!models.length) return;
-
-        const [ relatedCount, records ] = await this._processRelations(relations, models, dealWithImmutable);
-
-        if (autoCommitTransaction) {
-            await this.commit();
+        try {
+            const relations = this.mongoD.__relations[this.modelName];
+            const models = await this.mongoModel.find(conditions);
+    
+            if (!models.length) return;
+    
+            const [ relatedCount, records ] = await this._processRelations(relations, models, kwargs.dealWithImmutable);
+    
+            if (kwargs.autoCommitTransaction) {
+                await this.commit();
+            }
+    
+            return [ result.deletedCount, relatedCount, records];
+        } catch (e) {
+            this.session.endSession();
+            throw e;
         }
-
-        return [ result.deletedCount, relatedCount, records];
     }
 }

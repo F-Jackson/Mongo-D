@@ -275,6 +275,8 @@ export class ForeignKeyDeleter {
             const toPopulateModels = mongoModel._FKS ? await this._getLastsRelations(this.mongoModel) : "";
             const models = await this.mongoModel.find(conditions).populate(toPopulateModels);
     
+            console.log(models);
+
             if (!models.length) return;
     
             if (kwargs.direction === "foward" || kwargs.direction === "both") {

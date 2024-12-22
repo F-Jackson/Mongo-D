@@ -29,7 +29,7 @@ describe("Mongo model creation", () => {
     afterEach(async () => {
         await disconnectDb(client);
     });
-/*
+
     it("should create a model and process foreign keys", async () => {
         const RelatedModel = Model(mongoose, "RelatedModel", relatedSchema);
         const TestModel = Model(mongoose, "TestModel", testSchema);
@@ -50,9 +50,9 @@ describe("Mongo model creation", () => {
                 }
             ]
         });
-    });*/
+    });
 
-    it("should process paths in schema", async () => {
+    /*it("should process paths in schema", async () => {
         const related3 = new Schema(mongoose, {
             title: String
         });
@@ -151,8 +151,8 @@ describe("Mongo model creation", () => {
         const c = await NestedModel.find({}).populate(ff);
 
         console.log(JSON.stringify(c));
-        /*await aggregate(rM._id, R, as, com);*/
-    }, 0);
+        await aggregate(rM._id, R, as, com);
+    }, 0);*/
 /*
     it("should throw error if model with same name exists", async () => {
         const TestModel = Model(mongoose, "TestModel", testSchema);

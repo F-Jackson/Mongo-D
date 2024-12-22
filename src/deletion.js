@@ -281,7 +281,7 @@ export async function getLastsRelations(relations, oldAsPath = "") {
     Object.entries(relations).forEach(async ([modelName, values]) => {
         //if (alreadyGet.has(modelName)) return;
         values.forEach(async (value) => {
-            const path = `${oldAsPath}.${value.path.join(".")}`;
+            const path = `${oldAsPath}${oldAsPath ? "." : ""}${value.path.join(".")}`;
             const asPath = `${path}__${modelName}`;
             const lookup = {
                 from: modelName,
@@ -289,9 +289,8 @@ export async function getLastsRelations(relations, oldAsPath = "") {
                 foreignField: "_id",
                 as: asPath
             };
-            const unwind = asPath;
     
-            asPaths.push(asPath);
+            asPaths.push(`$${asPath}`);
             commands.push(lookup);
 
             const r = mongoose.__relations[modelName];
@@ -304,16 +303,18 @@ export async function getLastsRelations(relations, oldAsPath = "") {
     return [asPaths, commands];
 }
 
-export async function aggregate(id, as, com) {
-    const n = [{ $match: { _id: id } }];
+export async function aggregate(id, model, as, com) {
+    const n = [{ $match: { _id: id.toString() } }];
     for (let i = 0; i < as.length; i++) {
         n.push({ $lookup: com[i] });
         n.push({ $unwind: as[i] })
 
-        if (i === as.length - 1) {
+        /*if (i === as.length - 1) {
             n.push({ $replaceRoot: { newRoot: com[i].localField } })
-        }
+        }*/
     }
-
     console.log(n);
+
+    const c = await model.aggregate(n);
+    console.log(c);
 };

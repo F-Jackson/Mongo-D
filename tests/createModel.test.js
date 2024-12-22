@@ -62,7 +62,6 @@ describe("Mongo model creation", () => {
             related3: {
                 type: mongoose.Schema.Types.ObjectId,
                 ref: "RelatedModel3",
-                required: true,
                 unique: true,
                 immutable: true
             }
@@ -73,7 +72,6 @@ describe("Mongo model creation", () => {
             related2: {
                 type: mongoose.Schema.Types.ObjectId,
                 ref: "RelatedModel2",
-                required: true,
                 unique: true,
                 immutable: true
             }
@@ -100,7 +98,7 @@ describe("Mongo model creation", () => {
                         type: [mongoose.Schema.Types.ObjectId],
                         ref: "RelatedModel",
                     },
-                    arrayTest: [{ type: mongoose.Schema.Types.ObjectId, ref: "RelatedModel", required: true }]
+                    arrayTest: [{ type: mongoose.Schema.Types.ObjectId, ref: "RelatedModel" }]
                 }
             },
             lo: [String]
@@ -111,7 +109,6 @@ describe("Mongo model creation", () => {
             n: {
                 type: mongoose.Schema.Types.ObjectId,
                 ref: "NestedModel",
-                required: true,
                 unique: true,
                 immutable: true
             }
@@ -122,7 +119,6 @@ describe("Mongo model creation", () => {
             a: {
                 type: mongoose.Schema.Types.ObjectId,
                 ref: "TModel",
-                required: true,
                 unique: true,
                 immutable: true
             }
@@ -137,8 +133,35 @@ describe("Mongo model creation", () => {
 
         await InitModels(client);
 
-        const [as, com] = await getLastsRelations(client.__relations["RelatedModel"]);
-        await aggregate("TEST", as, com);
+        const rM2 = await R2.create({title: "KKKK"});
+        const rM = await R.create({title: "test", related2: rM2 });
+        const n = await NestedModel.create({["nestedField.subField"]: rM, ["nestedField2.po2.subField"]: rM});
+        const t = await T.create({n: n._id});
+
+        const c = await T.find({}).populate([
+            {
+                path: "n",
+                populate: {
+                    path: "nestedField.subField",
+                    populate: {
+                        path: "related2"
+                    }
+                }
+            },
+            {
+                path: "n",
+                populate: {
+                    path: "nestedField2.po2.subField",
+                    populate: {
+                        path: "related2"
+                    }
+                }
+            }
+        ]);
+
+        console.log(JSON.stringify(c));
+        /*const [as, com] = await getLastsRelations(client.__relations["RelatedModel"]);
+        await aggregate(rM._id, R, as, com);*/
     }, 0);
 /*
     it("should throw error if model with same name exists", async () => {

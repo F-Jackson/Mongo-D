@@ -74,6 +74,12 @@ describe("Mongo model creation", () => {
                 ref: "RelatedModel2",
                 unique: true,
                 immutable: true
+            },
+            rr: {
+                type: mongoose.Schema.Types.ObjectId,
+                ref: "RelatedModel2",
+                unique: true,
+                immutable: true
             }
         });
 
@@ -133,35 +139,19 @@ describe("Mongo model creation", () => {
 
         await InitModels(client);
 
-        const rM2 = await R2.create({title: "KKKK"});
-        const rM = await R.create({title: "test", related2: rM2 });
+        const rM3 = await R3.create({title: "OOOOO"});
+        const rM2 = await R2.create({title: "KKKK", related3: rM3 });
+        const rM = await R.create({title: "test", related2: rM2, rr: rM2 });
         const n = await NestedModel.create({["nestedField.subField"]: rM, ["nestedField2.po2.subField"]: rM});
         const t = await T.create({n: n._id});
 
-        const c = await T.find({}).populate([
-            {
-                path: "n",
-                populate: {
-                    path: "nestedField.subField",
-                    populate: {
-                        path: "related2"
-                    }
-                }
-            },
-            {
-                path: "n",
-                populate: {
-                    path: "nestedField2.po2.subField",
-                    populate: {
-                        path: "related2"
-                    }
-                }
-            }
-        ]);
+        //console.log(JSON.stringify(c));
+        const ff = await getLastsRelations(NestedModel);
+
+        const c = await NestedModel.find({}).populate(ff);
 
         console.log(JSON.stringify(c));
-        /*const [as, com] = await getLastsRelations(client.__relations["RelatedModel"]);
-        await aggregate(rM._id, R, as, com);*/
+        /*await aggregate(rM._id, R, as, com);*/
     }, 0);
 /*
     it("should throw error if model with same name exists", async () => {

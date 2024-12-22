@@ -277,30 +277,26 @@ export class ForeignKeyDeleter {
 let commands = [];
 let asPaths = [];
 
-export async function getLastsRelations(relations, oldAsPath = "") {
-    Object.entries(relations).forEach(async ([modelName, values]) => {
-        //if (alreadyGet.has(modelName)) return;
-        values.forEach(async (value) => {
-            const path = `${oldAsPath}${oldAsPath ? "." : ""}${value.path.join(".")}`;
-            const asPath = `${path}__${modelName}`;
-            const lookup = {
-                from: modelName,
-                localField: path,
-                foreignField: "_id",
-                as: asPath
-            };
-    
-            asPaths.push(`$${asPath}`);
-            commands.push(lookup);
+export async function getLastsRelations(mongoModel) {
+    const result = [];
 
-            const r = mongoose.__relations[modelName];
-            if (r) {
-                await getLastsRelations(r, asPath);
+    for (const [modelName, values] of Object.entries(mongoModel._FKS)) {
+        for (const value of values) {
+            const entry = { path: value.path.join(".") };
+
+            const relatedModel = mongoose.__models[modelName];
+            if (relatedModel && relatedModel._FKS) {
+                const subPopulate = await getLastsRelations(relatedModel);
+                if (subPopulate.length > 0) {
+                    entry.populate = subPopulate.length === 1 ? subPopulate[0] : subPopulate;
+                }
             }
-        });
-    });
 
-    return [asPaths, commands];
+            result.push(entry);
+        }
+    }
+
+    return result;
 }
 
 export async function aggregate(id, model, as, com) {

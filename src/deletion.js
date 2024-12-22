@@ -267,12 +267,12 @@ export class ForeignKeyDeleter {
         if (typeof kwargs !== "object") throw new Error("Invalid kwargs: must be an object");
         await this._setKwargs(kwargs);
 
-        await _initializeSession();
+        await this._initializeSession();
 
         try {
             const relations = this.mongoD.__relations[this.modelName];
 
-            const toPopulateModels = mongoModel._FKS ? await this._getLastsRelations(this.mongoModel) : "";
+            const toPopulateModels = this.mongoModel._FKS ? await this._getLastsRelations(this.mongoModel) : "";
             const models = await this.mongoModel.find(conditions).populate(toPopulateModels);
     
             console.log(models);

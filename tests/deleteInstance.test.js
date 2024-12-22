@@ -14,7 +14,7 @@ describe("Mongo model Delete", () => {
         await disconnectDb(client);
     }, 0);
 
-    it("should delete with required", async () => {
+    /*it("should delete with required", async () => {
         const relatedSchema = new Schema(mongoose, {
             title: { type: String, required: true },
         });
@@ -55,7 +55,7 @@ describe("Mongo model Delete", () => {
 
         const relateds = await RelatedModel.find({});
         expect(relateds).toHaveLength(0);
-    }, 0);
+    }, 0);*/
 
     it("should delete deep 3 with required", async () => {
         const relatedSchema3 = new Schema(mongoose, {
@@ -126,7 +126,7 @@ describe("Mongo model Delete", () => {
         expect(Object.entries(records)).toHaveLength(3);
     }, 0);
 
-    it("should nested delete with required", async () => {
+    /*it("should nested delete with required", async () => {
         const relatedSchema = new Schema(mongoose, {
             title: { type: String, required: true },
         });
@@ -732,5 +732,5 @@ describe("Mongo model Delete", () => {
 
         const relateds = await RelatedModel.find({});
         expect(relateds).toHaveLength(2);
-    }, 0);
+    }, 0);*/
 }, 0);

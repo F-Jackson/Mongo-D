@@ -57,6 +57,70 @@ describe("Mongo model Delete", () => {
         expect(relateds).toHaveLength(0);
     }, 0);
 
+    it("should delete deep 3 with required", async () => {
+        const relatedSchema3 = new Schema(mongoose, {
+            title: { type: String, required: true },
+        });
+        const relatedSchema2 = new Schema(mongoose, {
+            title: { type: String, required: true },
+            related3: {
+                type: mongoose.Schema.Types.ObjectId,
+                ref: "RelatedModel3",
+                required: true,
+            },
+        });
+        const relatedSchema = new Schema(mongoose, {
+            title: { type: String, required: true },
+            related2: {
+                type: mongoose.Schema.Types.ObjectId,
+                ref: "RelatedModel2",
+                required: true,
+            },
+        });
+        const testSchema = new Schema(mongoose, {
+            name: { type: String, required: true },
+            related: {
+                type: mongoose.Schema.Types.ObjectId,
+                ref: "RelatedModel",
+                required: true,
+            },
+        });
+
+        const RelatedModel = Model(mongoose, "RelatedModel", relatedSchema);
+        const RelatedModel2 = Model(mongoose, "RelatedModel2", relatedSchema2);
+        const RelatedModel3 = Model(mongoose, "RelatedModel3", relatedSchema3);
+        const TestModel = Model(mongoose, "TestModel", testSchema);
+
+        await InitModels(client);
+
+        const related3 = await RelatedModel3.Create({ title: "Related" });
+        const related2 = await RelatedModel2.Create({ title: "Related", related3: related3 });
+        const related = await RelatedModel.Create({ title: "Related", related2: related2 });
+
+        const tests = await TestModel.Create([
+            { 
+                name: "Test", 
+                related: related
+            },
+            { 
+                name: "Test2", 
+                related: related
+            }
+        ]);
+        expect(tests).toHaveLength(2);
+        const [ deletedCount, relatedCount, records ] = await RelatedModel.Delete({ _id: related._id });
+
+        expect(deletedCount).toEqual(1);
+        expect(relatedCount).toEqual(2);
+        expect(records["TestModel"].excluded).toHaveLength(2);
+
+        const testes = await TestModel.find({});
+        expect(testes).toHaveLength(0);
+
+        const relateds = await RelatedModel.find({});
+        expect(relateds).toHaveLength(0);
+    }, 0);
+
     it("should nested delete with required", async () => {
         const relatedSchema = new Schema(mongoose, {
             title: { type: String, required: true },

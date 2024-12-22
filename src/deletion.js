@@ -3,6 +3,15 @@ export class ForeignKeyDeleter {
         this.mongoModel = mongoModel;
         this.modelName = mongoModel.modelName;
         this.mongoD = mongoD;
+        this.session = null;
+
+        this session = await this.mongoD.startSession();
+        session.startTransaction();
+    }
+
+    async _initializeSession() {
+        this.session = await this.mongoD.startSession();
+        this.session.startTransaction();
     }
 
     async _getFilterConditionsAndPaths(
@@ -46,7 +55,7 @@ export class ForeignKeyDeleter {
 
         if (isRequired || (isImmutable && dealWithImmutable === "delete")) {
             metadata.excluded.push(...recordsIds);
-            const [deletedCount, related]
+            /*const [deletedCount, related]*/
             return 
         } else if (!isImmutable || dealWithImmutable === "keep") {
             metadata.updated.push(...recordsIds);
@@ -159,10 +168,24 @@ export class ForeignKeyDeleter {
         return [ relatedCount.count, records ];
     }
 
+    async commit() {
+        try {
+            await this.session.commitTransaction();
+        } catch (error) {
+            await this.session.abortTransaction();
+            throw error;
+        } finally {
+            this.session.endSession();
+        }
+    }
+
     async delete(
-        conditions, 
-        dealWithImmutable = "delete"
+        conditions,
+        dealWithImmutable = "delete",
+        autoCommitTransaction = true
     ) {
+        await _initializeSession();
+
         const relations = this.mongoD.__relations[this.modelName];
         const models = await this.mongoModel.find(conditions);
 
@@ -170,7 +193,9 @@ export class ForeignKeyDeleter {
 
         const [ relatedCount, records ] = await this._processRelations(relations, models, dealWithImmutable);
 
-        const result = await this.mongoModel.deleteMany(conditions);
+        if (autoCommitTransaction) {
+            await this.commit();
+        }
 
         return [ result.deletedCount, relatedCount, records];
     }

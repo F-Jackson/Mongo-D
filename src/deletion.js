@@ -46,6 +46,7 @@ export class ForeignKeyDeleter {
 
         if (isRequired || (isImmutable && dealWithImmutable === "delete")) {
             metadata.excluded.push(...recordsIds);
+            console.log(model);
             return model.deleteMany({ _id: { $in: recordsIds } });
         } else if (!isImmutable || dealWithImmutable === "keep") {
             metadata.updated.push(...recordsIds);

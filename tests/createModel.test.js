@@ -2,6 +2,7 @@ import { describe, it, beforeEach, expect } from "vitest";
 import mongoose from "mongoose";
 import { cleanDb, disconnectDb } from "./utils.js";
 import { InitModels, Model, Schema } from "../src/index.js";
+import { getLastsRelations } from "../src/deletion.js";
 
 
 describe("Mongo model creation", () => {
@@ -160,6 +161,8 @@ describe("Mongo model creation", () => {
         });
         const NestedModel = Model(mongoose, "NestedModel", nestedSchema);
         await InitModels(client);
+
+        await getLastsRelations(client.__relations["RelatedModel"]);
 
         expect(nestedSchema).toHaveProperty("__properties");
         const propertiesKeys = Object.entries(nestedSchema.__properties).map(([key, _]) => key);

@@ -136,11 +136,64 @@ export class ForeignKeyDeleter {
         records[relatedModelName] = metadata;
     }
 
+    async _processRelations__(
+        relations, 
+        models, 
+        dealWithImmutable,
+        direction
+    ) {
+        const records = {};
+        let relatedCount = { count: 0 };
+
+        const promises = Object.entries(relations).map(([relatedModelName, foreignKeys]) => {
+            return this._processSingleRelation(
+                relatedModelName, 
+                foreignKeys, 
+                models, 
+                dealWithImmutable,
+                records,
+                relatedCount
+            );
+        });
+
+        await Promise.all(promises);
+
+        return [ relatedCount.count, records ];
+    }
+
+    async getObjs (
+        conditions,
+        classObj
+    ) {
+        const populateFields = [];
+        
+        if (classObj._FKS) {
+            populateFields = Object.entries(classObj._FKS).flatMap(([modelName, fks]) => {
+                const model = this.mongoModel.__models[modelName];
+                if (!model) throw new Error(`Can not find ${modelName} in __models, its linked?`);
+
+                const paths = fks.map((fk) => fk.path.join("."));
+
+                if (model._FKS) {
+
+                }
+            });
+        }    
+        // Popule todos os campos que contêm ObjectId
+        return await classObj
+            .find(conditions)
+            .populate(populateFields.join(" "))
+            .exec();
+    };
+
     async _processRelations(
         relations, 
         models, 
-        dealWithImmutable
+        dealWithImmutable,
+        direction
     ) {
+        if (!relations) return;
+
         const records = {};
         let relatedCount = { count: 0 };
 
@@ -198,7 +251,14 @@ export class ForeignKeyDeleter {
     
             if (!models.length) return;
     
-            const [ relatedCount, records ] = await this._processRelations(relations, models, kwargs.dealWithImmutable);
+            if (kwargs.direction === "foward" || kwargs.direction === "both") {
+                await this._processRelations(
+                    relations, 
+                    models, 
+                    kwargs.dealWithImmutable,
+                    kwargs.direction
+                );
+            }
     
             if (kwargs.autoCommitTransaction) {
                 await this.commit();
@@ -210,4 +270,26 @@ export class ForeignKeyDeleter {
             throw e;
         }
     }
+}
+
+export async function getLastsRelations(relations) {
+    Object.entries(relations).forEach(([modelName, value]) => {
+        //if (alreadyGet.has(modelName)) return;
+        const commands = [];
+        const asPaths = [];
+
+        const path = [...asPaths, ...value.path].join(".");
+        const lookup = {
+            from: modelName,
+            localField: path,
+            foreignField: "_id",
+            as: `${path}${modelName}`
+        };
+        const unwind = `$${path}`;
+
+        asPaths.push(path);
+        commands.push([lookup, unwind]);
+
+        console.log(asPaths, commands);
+    });
 }

@@ -106,11 +106,35 @@ describe("Mongo model creation", () => {
             lo: [String]
         });
 
+        const TSchema = new Schema(mongoose, {
+            title: String,
+            n: {
+                type: mongoose.Schema.Types.ObjectId,
+                ref: "NestedModel",
+                required: true,
+                unique: true,
+                immutable: true
+            }
+        });
+
+        const ASchema = new Schema(mongoose, {
+            title: String,
+            a: {
+                type: mongoose.Schema.Types.ObjectId,
+                ref: "TModel",
+                required: true,
+                unique: true,
+                immutable: true
+            }
+        });
+
         const R3 = Model(mongoose, "RelatedModel3", related3);
         const R2 = Model(mongoose, "RelatedModel2", related2);
         const R = Model(mongoose, "RelatedModel", related);
-
         const NestedModel = Model(mongoose, "NestedModel", nestedSchema);
+        const T = Model(mongoose, "TModel", TSchema);
+        const A = Model(mongoose, "AModel", ASchema);
+
         await InitModels(client);
 
         await getLastsRelations(client.__relations["RelatedModel"]);

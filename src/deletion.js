@@ -1,3 +1,5 @@
+import mongoose from "mongoose";
+
 export class ForeignKeyDeleter {
     constructor(mongoModel, mongoD) {
         this.mongoModel = mongoModel;
@@ -273,14 +275,12 @@ export class ForeignKeyDeleter {
 }
 
 export async function getLastsRelations(relations) {
-    Object.entries(relations).forEach(([modelName, values]) => {
-        console.log(modelName, values);
+    Object.entries(relations).forEach(async ([modelName, values]) => {
         //if (alreadyGet.has(modelName)) return;
         const commands = [];
         const asPaths = [];
 
-        values.forEach((value) => {
-
+        values.forEach(async (value) => {
             const path = value.path.join(".");
             const asPath = `${path}__${modelName}`;
             const lookup = {
@@ -295,6 +295,12 @@ export async function getLastsRelations(relations) {
             commands.push([lookup, unwind]);
         });
 
-        console.log(asPaths, commands);
+        const r = mongoose.__relations[modelName];
+        if (r) {
+            const k = await getLastsRelations(r);
+        }
+
+        console.log(modelName, asPaths, commands);
+        return([asPaths, commands]);
     });
 }

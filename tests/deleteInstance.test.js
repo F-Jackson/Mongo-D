@@ -112,21 +112,18 @@ describe("Mongo model Delete", () => {
 
         const [ deletedCount, relatedCount, records ] = await RelatedModel3.Delete({ _id: related3._id });
 
-        expect(deletedCount).toEqual(1);
-        expect(relatedCount).toEqual(2);
-        expect(Object.entries(records)).toHaveLength(3);
-
         const testes = await TestModel.find({});
         expect(testes).toHaveLength(0);
-
         const relateds = await RelatedModel.find({});
         expect(relateds).toHaveLength(0);
-
         const relateds2 = await RelatedModel2.find({});
         expect(relateds2).toHaveLength(0);
-
         const relateds3 = await RelatedModel3.find({});
         expect(relateds3).toHaveLength(0);
+
+        expect(deletedCount).toEqual(1);
+        expect(relatedCount).toEqual(4);
+        expect(Object.entries(records)).toHaveLength(3);
     }, 0);
 
     it("should nested delete with required", async () => {

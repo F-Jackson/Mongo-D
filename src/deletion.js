@@ -215,6 +215,28 @@ export class ForeignKeyDeleter {
         return [ relatedCount.count, records ];
     }
 
+    async _getLastsRelations(mongoModel) {
+        const result = [];
+    
+        for (const [modelName, values] of Object.entries(mongoModel._FKS)) {
+            for (const value of values) {
+                const entry = { path: value.path.join(".") };
+    
+                const relatedModel = mongoose.__models[modelName];
+                if (relatedModel && relatedModel._FKS) {
+                    const subPopulate = await getLastsRelations(relatedModel);
+                    if (subPopulate.length > 0) {
+                        entry.populate = subPopulate.length === 1 ? subPopulate[0] : subPopulate;
+                    }
+                }
+    
+                result.push(entry);
+            }
+        }
+    
+        return result;
+    }
+
     async _setKwargs(kwargs) {
         if (!kwargs.dealWithImmutable) kwargs.dealWithImmutable = "delete";
         if (!kwargs.autoCommitTransaction) kwargs.autoCommitTransaction = true;
@@ -249,7 +271,9 @@ export class ForeignKeyDeleter {
 
         try {
             const relations = this.mongoD.__relations[this.modelName];
-            const models = await this.mongoModel.find(conditions);
+            
+            const toPopulateModels = await this._getLastsRelations(this.mongoModel);
+            const models = await this.mongoModel.find(conditions).populate(toPopulateModels);
     
             if (!models.length) return;
     
@@ -276,28 +300,6 @@ export class ForeignKeyDeleter {
 
 let commands = [];
 let asPaths = [];
-
-export async function getLastsRelations(mongoModel) {
-    const result = [];
-
-    for (const [modelName, values] of Object.entries(mongoModel._FKS)) {
-        for (const value of values) {
-            const entry = { path: value.path.join(".") };
-
-            const relatedModel = mongoose.__models[modelName];
-            if (relatedModel && relatedModel._FKS) {
-                const subPopulate = await getLastsRelations(relatedModel);
-                if (subPopulate.length > 0) {
-                    entry.populate = subPopulate.length === 1 ? subPopulate[0] : subPopulate;
-                }
-            }
-
-            result.push(entry);
-        }
-    }
-
-    return result;
-}
 
 export async function aggregate(id, model, as, com) {
     const n = [{ $match: { _id: id.toString() } }];

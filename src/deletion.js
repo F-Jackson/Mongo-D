@@ -271,8 +271,8 @@ export class ForeignKeyDeleter {
 
         try {
             const relations = this.mongoD.__relations[this.modelName];
-            
-            const toPopulateModels = await this._getLastsRelations(this.mongoModel);
+
+            const toPopulateModels = mongoModel._FKS ? await this._getLastsRelations(this.mongoModel) : "";
             const models = await this.mongoModel.find(conditions).populate(toPopulateModels);
     
             if (!models.length) return;

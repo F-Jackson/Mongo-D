@@ -153,7 +153,7 @@ describe("Mongo model creation", () => {
         console.log(JSON.stringify(c));
         await aggregate(rM._id, R, as, com);
     }, 0);*/
-/*
+
     it("should throw error if model with same name exists", async () => {
         const TestModel = Model(mongoose, "TestModel", testSchema);
 
@@ -676,5 +676,5 @@ describe("Mongo model creation", () => {
                 ]
             });
         }
-    });*/
+    });
 }, 0);

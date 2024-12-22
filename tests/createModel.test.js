@@ -2,7 +2,7 @@ import { describe, it, beforeEach, expect } from "vitest";
 import mongoose, { mongo } from "mongoose";
 import { cleanDb, disconnectDb } from "./utils.js";
 import { InitModels, Model, Schema } from "../src/index.js";
-import { getLastsRelations } from "../src/deletion.js";
+import { aggregate, getLastsRelations } from "../src/deletion.js";
 
 
 describe("Mongo model creation", () => {
@@ -137,7 +137,8 @@ describe("Mongo model creation", () => {
 
         await InitModels(client);
 
-        await getLastsRelations(client.__relations["RelatedModel"]);
+        const [as, com] = await getLastsRelations(client.__relations["RelatedModel"]);
+        await aggregate("TEST", as, com);
     }, 0);
 /*
     it("should throw error if model with same name exists", async () => {

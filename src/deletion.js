@@ -274,14 +274,14 @@ export class ForeignKeyDeleter {
     }
 }
 
-export async function getLastsRelations(relations) {
+let commands = [];
+let asPaths = [];
+
+export async function getLastsRelations(relations, oldAsPath = "") {
     Object.entries(relations).forEach(async ([modelName, values]) => {
         //if (alreadyGet.has(modelName)) return;
-        const commands = [];
-        const asPaths = [];
-
         values.forEach(async (value) => {
-            const path = value.path.join(".");
+            const path = `${oldAsPath}.${value.path.join(".")}`;
             const asPath = `${path}__${modelName}`;
             const lookup = {
                 from: modelName,
@@ -292,15 +292,28 @@ export async function getLastsRelations(relations) {
             const unwind = asPath;
     
             asPaths.push(asPath);
-            commands.push([lookup, unwind]);
+            commands.push(lookup);
+
+            const r = mongoose.__relations[modelName];
+            if (r) {
+                await getLastsRelations(r, asPath);
+            }
         });
-
-        const r = mongoose.__relations[modelName];
-        if (r) {
-            const k = await getLastsRelations(r);
-        }
-
-        console.log(modelName, asPaths, commands);
-        return([asPaths, commands]);
     });
+
+    return [asPaths, commands];
 }
+
+export async function aggregate(id, as, com) {
+    const n = [{ $match: { _id: id } }];
+    for (let i = 0; i < as.length; i++) {
+        n.push({ $lookup: com[i] });
+        n.push({ $unwind: as[i] })
+
+        if (i === as.length - 1) {
+            n.push({ $replaceRoot: { newRoot: com[i].localField } })
+        }
+    }
+
+    console.log(n);
+};

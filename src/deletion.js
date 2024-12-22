@@ -273,22 +273,27 @@ export class ForeignKeyDeleter {
 }
 
 export async function getLastsRelations(relations) {
-    Object.entries(relations).forEach(([modelName, value]) => {
+    Object.entries(relations).forEach(([modelName, values]) => {
+        console.log(modelName, values);
         //if (alreadyGet.has(modelName)) return;
         const commands = [];
         const asPaths = [];
 
-        const path = [...asPaths, ...value.path].join(".");
-        const lookup = {
-            from: modelName,
-            localField: path,
-            foreignField: "_id",
-            as: `${path}${modelName}`
-        };
-        const unwind = `$${path}`;
+        values.forEach((value) => {
 
-        asPaths.push(path);
-        commands.push([lookup, unwind]);
+            const path = value.path.join(".");
+            const asPath = `${path}__${modelName}`;
+            const lookup = {
+                from: modelName,
+                localField: path,
+                foreignField: "_id",
+                as: asPath
+            };
+            const unwind = asPath;
+    
+            asPaths.push(asPath);
+            commands.push([lookup, unwind]);
+        });
 
         console.log(asPaths, commands);
     });

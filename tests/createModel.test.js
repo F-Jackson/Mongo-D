@@ -52,6 +52,70 @@ describe("Mongo model creation", () => {
         });
     });
 
+    it("should process paths in schema", async () => {
+        const related3 = new Schema({
+            title: String
+        });
+
+        const related2 = new Schema({
+            title: String,
+            related3: {
+                type: mongoose.Schema.Types.ObjectId,
+                ref: "RelatedModel3",
+                required: true,
+                unique: true,
+                immutable: true
+            }
+        });
+
+        const related = new Schema({
+            title: String,
+            related2: {
+                type: mongoose.Schema.Types.ObjectId,
+                ref: "RelatedModel2",
+                required: true,
+                unique: true,
+                immutable: true
+            }
+        });
+
+        const nestedSchema = new Schema(mongoose, {
+            nestedField: {
+                subField: {
+                    type: mongoose.Schema.Types.ObjectId,
+                    ref: "RelatedModel",
+                    required: true,
+                    unique: true,
+                    immutable: true
+                },
+                po: String,
+                ll: {
+                    io: String,
+                    h: String
+                }
+            },
+            nestedField2: {
+                po2: {
+                    subField: {
+                        type: [mongoose.Schema.Types.ObjectId],
+                        ref: "RelatedModel",
+                    },
+                    arrayTest: [{ type: mongoose.Schema.Types.ObjectId, ref: "RelatedModel", required: true }]
+                }
+            },
+            lo: [String]
+        });
+
+        const R3 = Model(mongoose, "RelatedModel3", related3);
+        const R2 = Model(mongoose, "RelatedModel2", related2);
+        const R = Model(mongoose, "RelatedModel", related);
+
+        const NestedModel = Model(mongoose, "NestedModel", nestedSchema);
+        await InitModels(client);
+
+        await getLastsRelations(client.__relations["RelatedModel"]);
+    }, 0);
+
     it("should throw error if model with same name exists", async () => {
         const TestModel = Model(mongoose, "TestModel", testSchema);
 
@@ -161,8 +225,6 @@ describe("Mongo model creation", () => {
         });
         const NestedModel = Model(mongoose, "NestedModel", nestedSchema);
         await InitModels(client);
-
-        await getLastsRelations(client.__relations["RelatedModel"]);
 
         expect(nestedSchema).toHaveProperty("__properties");
         const propertiesKeys = Object.entries(nestedSchema.__properties).map(([key, _]) => key);

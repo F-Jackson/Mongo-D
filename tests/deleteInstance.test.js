@@ -61,6 +61,7 @@ describe("Mongo model Delete", () => {
     it("should delete deep 3 with required", async () => {
         const relatedSchema4 = new Schema(mongoose, {
             title: { type: String, required: true },
+            
         });
         const relatedSchema3 = new Schema(mongoose, {
             title: { type: String, required: true },
@@ -77,20 +78,10 @@ describe("Mongo model Delete", () => {
                 ref: "RelatedModel3",
                 required: true,
             },
-            related3B: {
-                type: mongoose.Schema.Types.ObjectId,
-                ref: "RelatedModel3",
-                required: true,
-            },
         });
         const relatedSchema = new Schema(mongoose, {
             title: { type: String, required: true },
             related2: {
-                type: mongoose.Schema.Types.ObjectId,
-                ref: "RelatedModel2",
-                required: true,
-            },
-            related2B: {
                 type: mongoose.Schema.Types.ObjectId,
                 ref: "RelatedModel2",
                 required: true,
@@ -125,7 +116,7 @@ describe("Mongo model Delete", () => {
             related3B: related3B._id
         });
 
-        const related2 = await RelatedModel2.Create({ title: "Related2", related3: related3, related3B: related3B._id });
+        const related2 = await RelatedModel2.Create({ title: "Related2", related3: related3 });
 
         const related = await RelatedModel.Create({
             title: "Related",
@@ -133,7 +124,7 @@ describe("Mongo model Delete", () => {
             related2B: related2B, // Certifique-se de passar o `_id`
         });        
 
-        const relatedB = await RelatedModel.Create({ title: "RelatedB", related2: related2B, related2B: related2 });
+        const relatedB = await RelatedModel.Create({ title: "RelatedB", related2: related2B });
 
         const tests = await TestModel.Create([
             { 
@@ -150,51 +141,55 @@ describe("Mongo model Delete", () => {
             }
         ]);
 
-        /*const results = await RelatedModel2.aggregate([
+        const results = await RelatedModel2.aggregate([
             {
                 $lookup: {
-                  from: "relatedmodel3", // Nome da coleção MongoDB, em minúsculas
-                  localField: "related3", // Campo local no schema `RelatedModel2`
-                  foreignField: "_id", // Campo `_id` em `RelatedModel3`
-                  as: "related3Data", // Nome do array de resultados
+                    from: "relatedmodel3", // Nome da coleção MongoDB, em minúsculas
+                    localField: "related3", // Campo local no schema RelatedModel2
+                    foreignField: "_id", // Campo _id em RelatedModel3
+                    as: "relatedmodel3", // Nome do array de resultados
                 },
             },
             {
-                $unwind: "$related3Data", // Desaninha o array `relatedData`
+                $unwind: "$relatedmodel3", // Desaninha o array relatedmodel3
             },
             {
                 $lookup: {
                     from: "relatedmodel4",
-                    localField: "related3Data.related4", // Campo `related4` em `related3Data`
-                    foreignField: "_id", // `_id` no esquema `RelatedModel4`
-                    as: "related4Data",
+                    localField: "relatedmodel3.related4", // Campo related4 em relatedmodel3
+                    foreignField: "_id", // _id no esquema RelatedModel4
+                    as: "relatedmodel4",
                 },
             },
             {
-                $unwind: "$related4Data", // Desaninha o array `relatedData`
+                $unwind: "$relatedmodel4", // Desaninha o array relatedmodel4
             },
             {
-                $lookup: {
-                    from: "relatedmodels", // Nome da coleção do `RelatedModel`
-                    localField: "_id", // O `_id` do documento de RelatedModel2
-                    foreignField: "related2", // Campo em `RelatedModel` que referencia `RelatedModel2`
-                    as: "relatedData", // Nome do campo que conterá os resultados
+                $addFields: {
+                    "__FKS__": {
+                        related3: {
+                            $mergeObjects: [
+                                "$relatedmodel3", // Dados de relatedmodel3
+                                { related4: "$relatedmodel4" }, // Anexa relatedmodel4 como related4 dentro de related3
+                            ],
+                        },
+                    },
                 },
             },
             {
-                $unwind: "$relatedData", // Desaninha o array `relatedData`
-            },
-            {
-                $lookup: {
-                  from: "testmodels", // Nome da coleção TestModel
-                  localField: "relatedData._id", // Campo em `relatedData` que referencia TestModel
-                  foreignField: "related", // Campo em TestModel que referencia RelatedModel
-                  as: "testDetails", // Nome do campo que conterá os resultados
+                $project: {
+                    relatedmodel3: 0, // Remove o campo relacionado original
+                    relatedmodel4: 0, // Remove o campo relacionado original
                 },
             },
-            {
-                $unwind: "$testDetails", // Para simplificar os resultados
-            },
+        ]);        
+        
+        
+        
+        const util = require('util');
+        console.log(util.inspect(results, { showHidden: false, depth: null, colors: true }));
+
+        /*
             {
                 $match: {
                   "testDetails._id": tests[0]._id, // Filtra pelo `_id` de TestModel
@@ -209,27 +204,15 @@ describe("Mongo model Delete", () => {
                     related4Data: 1
                 },
             }
-        ]);*/
+        */
 
-        function serializePopulate(data) {
-            return JSON.parse(JSON.stringify(data));
-        }
-
-        let results = [];
-        let already = new Set([]);
-        const m = await aggregateFks2(RelatedModel, mongoose);
+        /*const m = await aggregateFks2(RelatedModel, mongoose);
         const util = require('util');
-        console.log(util.inspect(m, { showHidden: false, depth: null, colors: true }));
-        //await aggregateRelations(RelatedModel, mongoose, results);
-        let trueResults = [];
-        for (let i = results.length - 1; i >= 0; i--) {
-            trueResults.push(results[i][0]);
-            trueResults.push(results[i][1]);
-        }
-
-        console.log(trueResults);
         const g = await RelatedModel.aggregate(m);
         console.log(JSON.stringify(g));
+        console.log(util.inspect(m, { showHidden: false, depth: null, colors: true }));*/
+
+
         //console.log(trueResults);
         //console.log(JSON.stringify(results));
         //await aggregate("RelatedModel", mongoose);

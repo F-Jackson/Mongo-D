@@ -115,6 +115,7 @@ describe("Mongo model Delete", () => {
         expect(await TestModel.find({})).toHaveLength(2);
 
         console.log(related2._id);
+        console.log(related._id);
         console.log(tests.map(t => t._id));
 
         const results = await RelatedModel2.aggregate([

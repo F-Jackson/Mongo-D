@@ -308,7 +308,7 @@ export async function aggregateRelations(mongoModel, mongoD, results, oldName = 
 };
 
 export async function aggregateFks(mongoModel, mongoD, results, already, oldName = "") {
-    if (!mongoModel._FKS || already.has(mongoModel.modelName)) return;
+    if (!mongoModel._FKS) return;
 
     for (const [modelName, values] of Object.entries(mongoModel._FKS)) {
         for (const value of values) {
@@ -316,17 +316,18 @@ export async function aggregateFks(mongoModel, mongoD, results, already, oldName
 
             const path = value.path.join(".");
             const collectionName = model.collection.name;
-            const collectionToUpper = collectionName.toUpperCase();
+            const collectionToUpper = `${collectionName.toUpperCase()}.${path}`;
 
-            const entry = { 
-                $lookup: {
+            const entry = [
+                {$lookup: {
                     from: collectionName,
                     localField: `${oldName}${oldName ? "." : ""}${path}`,
                     foreignField: "_id",
                     as: collectionToUpper
-                },
-                $unwind: `$${collectionToUpper}`
-            };
+                }},
+                {$unwind: `$${collectionToUpper}`}
+            ];
+
             if (model._FKS) {
                 await aggregateFks(model, mongoD, results, already, collectionToUpper);
             }
@@ -334,8 +335,6 @@ export async function aggregateFks(mongoModel, mongoD, results, already, oldName
             results.push(entry);
         }
     }
-
-    already.add(mongoModel.modelName);
 };
 
 export async function aggregateFind(mongoModel) {

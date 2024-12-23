@@ -2,6 +2,7 @@ import { describe, it, beforeEach, expect } from "vitest";
 import { cleanDb, disconnectDb } from "./utils.js";
 import { InitModels, Model, Schema } from "../src/index.js";
 import mongoose from "mongoose";
+import { aggregate } from "../src/deletion.js";
 
 describe("Mongo model Delete", () => {
     let client;
@@ -93,8 +94,8 @@ describe("Mongo model Delete", () => {
 
         await InitModels(client);
 
-        const related3 = await RelatedModel3.Create({ title: "Related" });
-        const related2 = await RelatedModel2.Create({ title: "Related", related3: related3 });
+        const related3 = await RelatedModel3.Create({ title: "Related3" });
+        const related2 = await RelatedModel2.Create({ title: "Related2", related3: related3 });
         const related = await RelatedModel.Create({ title: "Related", related2: related2 });
 
         const tests = await TestModel.Create([
@@ -108,8 +109,40 @@ describe("Mongo model Delete", () => {
             }
         ]);
 
-        expect(tests).toHaveLength(2);
+        expect(await RelatedModel3.find({})).toHaveLength(1);
+        expect(await RelatedModel2.find({})).toHaveLength(1);
+        expect(await RelatedModel.find({})).toHaveLength(1);
+        expect(await TestModel.find({})).toHaveLength(2);
 
+        console.log(related2._id);
+        console.log(tests.map(t => t._id));
+
+        const results = await RelatedModel2.aggregate([
+            {
+                $lookup: {
+                    from: "relatedmodels", // Nome da coleção do `RelatedModel`
+                    localField: "_id", // O `_id` do documento de RelatedModel2
+                    foreignField: "related2", // Campo em `RelatedModel` que referencia `RelatedModel2`
+                    as: "relatedData", // Nome do campo que conterá os resultados
+                },
+            },
+            {
+                $unwind: "$relatedData", // Desaninha o array `relatedData`
+            },
+            {
+                $lookup: {
+                  from: "testmodels", // Nome da coleção TestModel
+                  localField: "relatedData._id", // Campo em `relatedData` que referencia TestModel
+                  foreignField: "related", // Campo em TestModel que referencia RelatedModel
+                  as: "testDetails", // Nome do campo que conterá os resultados
+                },
+            },
+          ]);
+          
+          console.log(JSON.stringify(results));
+        //await aggregate("RelatedModel", mongoose);
+
+        return;
         const [ deletedCount, relatedCount, records ] = await RelatedModel3.Delete({ _id: related3._id });
 
         const testes = await TestModel.find({});

@@ -265,6 +265,7 @@ export class ForeignKeyDeleter {
     ) {
         if (!kwargs) kwargs = {};
         if (typeof kwargs !== "object") throw new Error("Invalid kwargs: must be an object");
+
         await this._setKwargs(kwargs);
 
         await this._initializeSession();
@@ -303,18 +304,8 @@ export class ForeignKeyDeleter {
 let commands = [];
 let asPaths = [];
 
-export async function aggregate(id, model, as, com) {
-    const n = [{ $match: { _id: id.toString() } }];
-    for (let i = 0; i < as.length; i++) {
-        n.push({ $lookup: com[i] });
-        n.push({ $unwind: as[i] })
+export async function aggregate(modelName, mongoD) {
+    const relations = mongoD.__relations[modelName];
 
-        /*if (i === as.length - 1) {
-            n.push({ $replaceRoot: { newRoot: com[i].localField } })
-        }*/
-    }
-    console.log(n);
-
-    const c = await model.aggregate(n);
-    console.log(c);
+    console.log(relations);
 };

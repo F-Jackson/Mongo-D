@@ -311,9 +311,10 @@ export async function aggregateFks(mongoModel, mongoD, results, already, oldName
     if (!mongoModel._FKS) return;
 
     for (const [modelName, values] of Object.entries(mongoModel._FKS)) {
-        for (const value of values) {
-            const model = mongoD.__models[modelName];
+        const model = mongoD.__models[modelName];
+        if (!model) return;
 
+        for (const value of values) {
             const path = value.path.join(".");
             const collectionName = model.collection.name;
             const collectionToUpper = `${collectionName.toUpperCase()}.${path}`;

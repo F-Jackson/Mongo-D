@@ -215,7 +215,7 @@ describe("Mongo model Delete", () => {
         let already = new Set([]);
         await aggregateFks(RelatedModel, mongoose, results, already);
         //await aggregateRelations(RelatedModel, mongoose, results);
-
+        results.reverse();
         console.log(results);
         //console.log(JSON.stringify(results));
         //await aggregate("RelatedModel", mongoose);

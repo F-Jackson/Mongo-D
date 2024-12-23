@@ -330,14 +330,56 @@ export async function aggregateFks(mongoModel, mongoD, results, already, oldName
             ];
 
             if (model._FKS) {
-                if(!entry.pipeline) entry.pipeline = [];
-
-                entry.pipeline.push(...await aggregateFks(model, mongoD, results, already, collectionToUpper));
+                await aggregateFks(model, mongoD, results, already, collectionToUpper);
             }
 
-            if (!oldName) results.push(entry);
+            results.push(entry);
         }
     }
+};
+
+export async function aggregateFks2(mongoModel, mongoD, results, already, oldName = "") {
+    //For nos fks
+    //For nos values
+    //Contruir entry da pipiline referente
+    //Retornar entrys
+
+    const entries = [];
+
+    for (const [modelName, values] of Object.entries(mongoModel._FKS)) {
+        const model = mongoD.__models[modelName];
+        if (!model) return;
+
+        for (const value of values) {
+            const path = value.path.join(".");
+            const collectionName = model.collection.name;
+            const collectionToUpper = `${collectionName.toUpperCase()}.${path}`;
+
+            const entry = [
+                {
+                    $lookup: {
+                        from: collectionName,
+                        localField: `${oldName}${oldName ? "." : ""}${path}`,
+                        foreignField: "_id",
+                        as: collectionToUpper
+                    }
+                },
+                {
+                    $unwind: `$${collectionToUpper}`
+                }
+            ];
+
+            if (model._FKS) {
+                if (!entries.populate) entries.populate = [];
+
+                entries.populate.push(...await aggregateFks(model, mongoD, results, already, collectionToUpper));
+            }
+
+            results.push(entry);
+        }
+    }
+
+    return entries;
 };
 
 export async function aggregateFind(mongoModel) {

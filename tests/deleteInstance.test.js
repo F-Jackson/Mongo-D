@@ -2,7 +2,7 @@ import { describe, it, beforeEach, expect } from "vitest";
 import { cleanDb, disconnectDb } from "./utils.js";
 import { InitModels, Model, Schema } from "../src/index.js";
 import mongoose from "mongoose";
-import { aggregate, aggregateFks } from "../src/deletion.js";
+import { aggregate, aggregateFks, aggregateRelations } from "../src/deletion.js";
 
 describe("Mongo model Delete", () => {
     let client;
@@ -81,6 +81,11 @@ describe("Mongo model Delete", () => {
         const relatedSchema = new Schema(mongoose, {
             title: { type: String, required: true },
             related2: {
+                type: mongoose.Schema.Types.ObjectId,
+                ref: "RelatedModel2",
+                required: true,
+            },
+            relatedB: {
                 type: mongoose.Schema.Types.ObjectId,
                 ref: "RelatedModel2",
                 required: true,
@@ -191,7 +196,8 @@ describe("Mongo model Delete", () => {
 
         let results = [];
         await aggregateFks(RelatedModel, mongoose, results);
-        
+        //await aggregateRelations(RelatedModel, mongoose, results);
+
         console.log(results);
         //console.log(JSON.stringify(results));
         //await aggregate("RelatedModel", mongoose);

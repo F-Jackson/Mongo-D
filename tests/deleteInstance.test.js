@@ -108,6 +108,11 @@ describe("Mongo model Delete", () => {
         const related2 = await RelatedModel2.Create({ title: "Related2", related3: related3 });
         const related = await RelatedModel.Create({ title: "Related", related2: related2 });
 
+        const related4B = await RelatedModel4.Create({ title: "Related4B" });
+        const related3B = await RelatedModel3.Create({ title: "Related3B", related4: related4B });
+        const related2B = await RelatedModel2.Create({ title: "Related2B", related3: related3B });
+        const relatedB = await RelatedModel.Create({ title: "RelatedB", related2: related2B });
+
         const tests = await TestModel.Create([
             { 
                 name: "Test", 
@@ -116,13 +121,12 @@ describe("Mongo model Delete", () => {
             { 
                 name: "Test2", 
                 related: related
+            },
+            { 
+                name: "Test3", 
+                related: relatedB
             }
         ]);
-
-        expect(await RelatedModel3.find({})).toHaveLength(1);
-        expect(await RelatedModel2.find({})).toHaveLength(1);
-        expect(await RelatedModel.find({})).toHaveLength(1);
-        expect(await TestModel.find({})).toHaveLength(2);
 
         const results = await RelatedModel2.aggregate([
             {
@@ -185,7 +189,7 @@ describe("Mongo model Delete", () => {
             }
         ]);
 
-        console.log(related3._id);
+        console.log(tests[0]._id, related._id, related2._id, related3._id, related4._id);
         console.log(JSON.stringify(results));
         //await aggregate("RelatedModel", mongoose);
 

@@ -341,17 +341,14 @@ export async function aggregateFks(mongoModel, mongoD, results, already, oldName
 export async function aggregateFks2(mongoModel, mongoD) {
     const entries = [];
 
-    // Iterar sobre as FKs no modelo
     for (const [modelName, values] of Object.entries(mongoModel._FKS)) {
         const model = mongoD.__models[modelName];
         if (!model) return;
 
-        // Iterar sobre os valores (paths)
         for (const value of values) {
             const path = value.path.join(".");
             const collectionName = model.collection.name;
 
-            // Criar a entrada de lookup e unwind
             const entry = [
                 {
                     $lookup: {
@@ -366,12 +363,9 @@ export async function aggregateFks2(mongoModel, mongoD) {
                 }
             ];
 
-            // Se o modelo tem FKs, fazer o populate de forma recursiva
             if (model._FKS) {
-                // Obter os populações aninhadas
                 const populateEntries = await aggregateFks2(model, mongoD);
                 if (populateEntries.length > 0) {
-                    // Adicionar populate ao lookup
                     entry[0]["$lookup"].pipeline = populateEntries;
                 }
             }

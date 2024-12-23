@@ -146,6 +146,13 @@ describe("Mongo model Delete", () => {
                   "testDetails._id": tests[0]._id, // Filtra pelo `_id` de TestModel
                 },
             },
+            {
+                $project: {
+                    title: 1, // Campos que você deseja manter
+                    relatedData: 1,
+                    testDetails: 1,
+                },
+            }
           ]);
           
           console.log(tests[0]._id);

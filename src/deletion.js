@@ -306,3 +306,42 @@ export async function aggregateRelations(modelName, mongoD) {
 
     console.log(relations);
 };
+
+export async function aggregateFks(mongoModel, mongoD) {
+    const result = [];
+    
+    for (const [modelName, values] of Object.entries(mongoModel._FKS)) {
+        for (const value of values) {
+            const path = value.path.join(".");
+            const collectionName = mongoModel.collection.collectionName;
+
+            const entry = { 
+                from: collectionName,
+                foreignField: "_id",
+                as: `FK__${collectionName}`
+            };
+
+            const relatedModel = mongoD.__models[modelName];
+            if (relatedModel) {
+                if (relatedModel._FKS) {
+                    const subPopulate = await getLastsRelations(relatedModel);
+                    if (subPopulate.length > 0) {
+                        entry.populate = subPopulate.length === 1 ? subPopulate[0] : subPopulate;
+                    }
+                } else {
+                    entry.localField = path;
+                }
+            }
+
+            result.push(entry);
+        }
+    }
+
+    return result;
+};
+
+export async function aggregateFind(mongoModel, ) {
+    const relations = mongoD.__relations[modelName];
+
+    console.log(relations);
+};

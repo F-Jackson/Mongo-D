@@ -301,10 +301,7 @@ export class ForeignKeyDeleter {
     }
 }
 
-let commands = [];
-let asPaths = [];
-
-export async function aggregate(modelName, mongoD) {
+export async function aggregateRelations(modelName, mongoD) {
     const relations = mongoD.__relations[modelName];
 
     console.log(relations);

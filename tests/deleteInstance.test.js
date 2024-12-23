@@ -221,6 +221,7 @@ describe("Mongo model Delete", () => {
             trueResults.push(results[i][1]);
         }
 
+        console.log(trueResults);
         const g = await RelatedModel.aggregate(trueResults);
         console.log(JSON.stringify(g));
         //console.log(trueResults);

@@ -59,8 +59,16 @@ describe("Mongo model Delete", () => {
     }, 0);*/
 
     it("should delete deep 3 with required", async () => {
+        const relatedSchema4 = new Schema(mongoose, {
+            title: { type: String, required: true },
+        });
         const relatedSchema3 = new Schema(mongoose, {
             title: { type: String, required: true },
+            related4: {
+                type: mongoose.Schema.Types.ObjectId,
+                ref: "RelatedModel4",
+                required: true,
+            },
         });
         const relatedSchema2 = new Schema(mongoose, {
             title: { type: String, required: true },
@@ -90,11 +98,13 @@ describe("Mongo model Delete", () => {
         const RelatedModel = Model(mongoose, "RelatedModel", relatedSchema);
         const RelatedModel2 = Model(mongoose, "RelatedModel2", relatedSchema2);
         const RelatedModel3 = Model(mongoose, "RelatedModel3", relatedSchema3);
+        const RelatedModel4 = Model(mongoose, "RelatedModel4", relatedSchema4);
         const TestModel = Model(mongoose, "TestModel", testSchema);
 
         await InitModels(client);
 
-        const related3 = await RelatedModel3.Create({ title: "Related3" });
+        const related4 = await RelatedModel4.Create({ title: "Related4" });
+        const related3 = await RelatedModel3.Create({ title: "Related3", related4: related4 });
         const related2 = await RelatedModel2.Create({ title: "Related2", related3: related3 });
         const related = await RelatedModel.Create({ title: "Related", related2: related2 });
 
@@ -114,11 +124,29 @@ describe("Mongo model Delete", () => {
         expect(await RelatedModel.find({})).toHaveLength(1);
         expect(await TestModel.find({})).toHaveLength(2);
 
-        console.log(related2._id);
-        console.log(related._id);
-        console.log(tests.map(t => t._id));
-
         const results = await RelatedModel2.aggregate([
+            {
+                $lookup: {
+                  from: "relatedmodel3", // Nome da coleção MongoDB, em minúsculas
+                  localField: "related3", // Campo local no schema `RelatedModel2`
+                  foreignField: "_id", // Campo `_id` em `RelatedModel3`
+                  as: "related3Data", // Nome do array de resultados
+                },
+            },
+            {
+                $unwind: "$related3Data", // Desaninha o array `relatedData`
+            },
+            {
+                $lookup: {
+                  from: "relatedmodel4", // Nome da coleção MongoDB, em minúsculas
+                  localField: "related3Data._id", // Campo local no schema `RelatedModel2`
+                  foreignField: "related4", // Campo `_id` em `RelatedModel3`
+                  as: "related4Data", // Nome do array de resultados
+                },
+            },
+            {
+                $unwind: "$related4Data", // Desaninha o array `relatedData`
+            },
             {
                 $lookup: {
                     from: "relatedmodels", // Nome da coleção do `RelatedModel`
@@ -148,15 +176,16 @@ describe("Mongo model Delete", () => {
             },
             {
                 $project: {
-                    title: 1, // Campos que você deseja manter
+                    _id: 1,
                     relatedData: 1,
                     testDetails: 1,
+                    related3Data: 1
                 },
             }
-          ]);
-          
-          console.log(tests[0]._id);
-          console.log(JSON.stringify(results));
+        ]);
+
+        console.log(related3._id);
+        console.log(JSON.stringify(results));
         //await aggregate("RelatedModel", mongoose);
 
         return;

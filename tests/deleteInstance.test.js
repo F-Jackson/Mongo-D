@@ -138,10 +138,10 @@ describe("Mongo model Delete", () => {
             },
             {
                 $lookup: {
-                  from: "relatedmodel4", // Nome da coleção MongoDB, em minúsculas
-                  localField: "related3Data._id", // Campo local no schema `RelatedModel2`
-                  foreignField: "related4", // Campo `_id` em `RelatedModel3`
-                  as: "related4Data", // Nome do array de resultados
+                    from: "relatedmodel4",
+                    localField: "related3Data.related4", // Campo `related4` em `related3Data`
+                    foreignField: "_id", // `_id` no esquema `RelatedModel4`
+                    as: "related4Data",
                 },
             },
             {
@@ -179,7 +179,8 @@ describe("Mongo model Delete", () => {
                     _id: 1,
                     relatedData: 1,
                     testDetails: 1,
-                    related3Data: 1
+                    related3Data: 1,
+                    related4Data: 1
                 },
             }
         ]);

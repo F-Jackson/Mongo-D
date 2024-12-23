@@ -338,49 +338,51 @@ export async function aggregateFks(mongoModel, mongoD, results, already, oldName
     }
 };
 
-export async function aggregateFks2(mongoModel, mongoD, results, already, oldName = "") {
-    //For nos fks
-    //For nos values
-    //Contruir entry da pipiline referente
-    //Retornar entrys
-
+export async function aggregateFks2(mongoModel, mongoD) {
     const entries = [];
 
+    // Iterar sobre as FKs no modelo
     for (const [modelName, values] of Object.entries(mongoModel._FKS)) {
         const model = mongoD.__models[modelName];
         if (!model) return;
 
+        // Iterar sobre os valores (paths)
         for (const value of values) {
             const path = value.path.join(".");
             const collectionName = model.collection.name;
-            const collectionToUpper = `${collectionName.toUpperCase()}.${path}`;
 
+            // Criar a entrada de lookup e unwind
             const entry = [
                 {
                     $lookup: {
                         from: collectionName,
-                        localField: `${oldName}${oldName ? "." : ""}${path}`,
+                        localField: path,
                         foreignField: "_id",
-                        as: collectionToUpper
+                        as: path
                     }
                 },
                 {
-                    $unwind: `$${collectionToUpper}`
+                    $unwind: `$${path}`
                 }
             ];
 
+            // Se o modelo tem FKs, fazer o populate de forma recursiva
             if (model._FKS) {
-                if (!entries.populate) entries.populate = [];
-
-                entries.populate.push(...await aggregateFks(model, mongoD, results, already, collectionToUpper));
+                // Obter os populações aninhadas
+                const populateEntries = await aggregateFks2(model, mongoD);
+                if (populateEntries.length > 0) {
+                    // Adicionar populate ao lookup
+                    entry[0]["$lookup"].pipeline = populateEntries;
+                }
             }
 
-            results.push(entry);
+            entries.push(...entry);
         }
     }
 
     return entries;
 };
+
 
 export async function aggregateFind(mongoModel) {
     const relations = mongoD.__relations[modelName];

@@ -2,7 +2,7 @@ import { describe, it, beforeEach, expect } from "vitest";
 import { cleanDb, disconnectDb } from "./utils.js";
 import { InitModels, Model, Schema } from "../src/index.js";
 import mongoose from "mongoose";
-import { aggregate, aggregateFks, aggregateRelations } from "../src/deletion.js";
+import { aggregateFks2 } from "../src/deletion.js";
 
 describe("Mongo model Delete", () => {
     let client;
@@ -211,9 +211,15 @@ describe("Mongo model Delete", () => {
             }
         ]);*/
 
+        function serializePopulate(data) {
+            return JSON.parse(JSON.stringify(data));
+        }
+
         let results = [];
         let already = new Set([]);
-        await aggregateFks(RelatedModel, mongoose, results, already);
+        const m = await aggregateFks2(RelatedModel, mongoose);
+        const util = require('util');
+        console.log(util.inspect(m, { showHidden: false, depth: null, colors: true }));
         //await aggregateRelations(RelatedModel, mongoose, results);
         let trueResults = [];
         for (let i = results.length - 1; i >= 0; i--) {
@@ -222,7 +228,7 @@ describe("Mongo model Delete", () => {
         }
 
         console.log(trueResults);
-        const g = await RelatedModel.aggregate(trueResults);
+        const g = await RelatedModel.aggregate(m);
         console.log(JSON.stringify(g));
         //console.log(trueResults);
         //console.log(JSON.stringify(results));

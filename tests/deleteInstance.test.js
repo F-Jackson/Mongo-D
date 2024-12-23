@@ -2,7 +2,7 @@ import { describe, it, beforeEach, expect } from "vitest";
 import { cleanDb, disconnectDb } from "./utils.js";
 import { InitModels, Model, Schema } from "../src/index.js";
 import mongoose from "mongoose";
-import { aggregate } from "../src/deletion.js";
+import { aggregate, aggregateFks } from "../src/deletion.js";
 
 describe("Mongo model Delete", () => {
     let client;
@@ -128,7 +128,7 @@ describe("Mongo model Delete", () => {
             }
         ]);
 
-        const results = await RelatedModel2.aggregate([
+        /*const results = await RelatedModel2.aggregate([
             {
                 $lookup: {
                   from: "relatedmodel3", // Nome da coleção MongoDB, em minúsculas
@@ -187,10 +187,13 @@ describe("Mongo model Delete", () => {
                     related4Data: 1
                 },
             }
-        ]);
+        ]);*/
 
-        console.log(tests[0]._id, related._id, related2._id, related3._id, related4._id);
-        console.log(JSON.stringify(results));
+        const results = [];
+        await aggregateFks(RelatedModel2, mongoose, results);
+        
+        console.log(results);
+        //console.log(JSON.stringify(results));
         //await aggregate("RelatedModel", mongoose);
 
         return;

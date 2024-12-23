@@ -138,8 +138,17 @@ describe("Mongo model Delete", () => {
                   as: "testDetails", // Nome do campo que conterá os resultados
                 },
             },
+            {
+                $unwind: "$testDetails", // Para simplificar os resultados
+            },
+            {
+                $match: {
+                  "testDetails._id": tests[0]._id, // Filtra pelo `_id` de TestModel
+                },
+            },
           ]);
           
+          console.log(tests[0]._id);
           console.log(JSON.stringify(results));
         //await aggregate("RelatedModel", mongoose);
 

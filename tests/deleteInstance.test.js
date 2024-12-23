@@ -77,6 +77,11 @@ describe("Mongo model Delete", () => {
                 ref: "RelatedModel3",
                 required: true,
             },
+            related3B: {
+                type: mongoose.Schema.Types.ObjectId,
+                ref: "RelatedModel3",
+                required: true,
+            },
         });
         const relatedSchema = new Schema(mongoose, {
             title: { type: String, required: true },
@@ -85,7 +90,7 @@ describe("Mongo model Delete", () => {
                 ref: "RelatedModel2",
                 required: true,
             },
-            relatedB: {
+            related2B: {
                 type: mongoose.Schema.Types.ObjectId,
                 ref: "RelatedModel2",
                 required: true,
@@ -108,15 +113,27 @@ describe("Mongo model Delete", () => {
 
         await InitModels(client);
 
-        const related4 = await RelatedModel4.Create({ title: "Related4" });
-        const related3 = await RelatedModel3.Create({ title: "Related3", related4: related4 });
-        const related2 = await RelatedModel2.Create({ title: "Related2", related3: related3 });
-        const related = await RelatedModel.Create({ title: "Related", related2: related2 });
-
         const related4B = await RelatedModel4.Create({ title: "Related4B" });
         const related3B = await RelatedModel3.Create({ title: "Related3B", related4: related4B });
-        const related2B = await RelatedModel2.Create({ title: "Related2B", related3: related3B });
-        const relatedB = await RelatedModel.Create({ title: "RelatedB", related2: related2B });
+
+        const related4 = await RelatedModel4.Create({ title: "Related4" });
+        const related3 = await RelatedModel3.Create({ title: "Related3", related4: related4 });
+
+        const related2B = await RelatedModel2.Create({
+            title: "Related2B",
+            related3: related3._id,
+            related3B: related3B._id
+        });
+
+        const related2 = await RelatedModel2.Create({ title: "Related2", related3: related3, related3B: related3B._id });
+
+        const related = await RelatedModel.Create({
+            title: "Related",
+            related2: related2,
+            related2B: related2B, // Certifique-se de passar o `_id`
+        });        
+
+        const relatedB = await RelatedModel.Create({ title: "RelatedB", related2: related2B, related2B: related2 });
 
         const tests = await TestModel.Create([
             { 
@@ -195,7 +212,8 @@ describe("Mongo model Delete", () => {
         ]);*/
 
         let results = [];
-        await aggregateFks(RelatedModel, mongoose, results);
+        let already = new Set([]);
+        await aggregateFks(RelatedModel, mongoose, results, already);
         //await aggregateRelations(RelatedModel, mongoose, results);
 
         console.log(results);

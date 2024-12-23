@@ -307,8 +307,8 @@ export async function aggregateRelations(mongoModel, mongoD, results, oldName = 
     console.log(relations);
 };
 
-export async function aggregateFks(mongoModel, mongoD, results, oldName = "") {
-    if (!mongoModel._FKS) return;
+export async function aggregateFks(mongoModel, mongoD, results, already, oldName = "") {
+    if (!mongoModel._FKS || already.has(mongoModel.modelName)) return;
 
     for (const [modelName, values] of Object.entries(mongoModel._FKS)) {
         for (const value of values) {
@@ -328,12 +328,14 @@ export async function aggregateFks(mongoModel, mongoD, results, oldName = "") {
                 $unwind: `$${collectionToUpper}`
             };
             if (model._FKS) {
-                await aggregateFks(model, mongoD, results, collectionToUpper);
+                await aggregateFks(model, mongoD, results, already, collectionToUpper);
             }
 
             results.push(entry);
         }
     }
+
+    already.add(mongoModel.modelName);
 };
 
 export async function aggregateFind(mongoModel) {

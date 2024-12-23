@@ -307,27 +307,29 @@ export async function aggregateRelations(modelName, mongoD) {
     console.log(relations);
 };
 
-export async function aggregateFks(mongoModel, mongoD, result, oldName = "") {    
+export async function aggregateFks(mongoModel, mongoD, results, oldName = "") {    
     for (const [modelName, values] of Object.entries(mongoModel._FKS)) {
         for (const value of values) {
+            const model = mongoD.__models[modelName];
+
             const path = value.path.join(".");
-            const collectionName = mongoModel.collection.name;
+            const collectionName = model.collection.name;
+            const collectionToUpper = collectionName.toUpperCase();
 
             const entry = { 
-                from: collectionName,
-                localField: `${oldName}${oldName ? "." : ""}${path}`,
-                foreignField: "_id",
-                as: collectionName
+                $lookup: {
+                    from: collectionName,
+                    localField: `${oldName}${oldName ? "." : ""}${path}`,
+                    foreignField: "_id",
+                    as: collectionToUpper
+                },
+                $unwind: `$${collectionToUpper}`
             };
-
-            const relatedModel = mongoD.__models[modelName];
-            if (relatedModel) {
-                if (relatedModel._FKS) {
-                    await aggregateFks(relatedModel, mongoD, collectionName);
-                }
+            if (model._FKS) {
+                await aggregateFks(model, mongoD, results, collectionToUpper);
             }
 
-            result.push(entry);
+            results.push(entry);
         }
     }
 };

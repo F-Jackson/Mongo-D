@@ -189,8 +189,8 @@ describe("Mongo model Delete", () => {
             }
         ]);*/
 
-        const results = [];
-        await aggregateFks(RelatedModel2, mongoose, results);
+        let results = [];
+        await aggregateFks(RelatedModel, mongoose, results);
         
         console.log(results);
         //console.log(JSON.stringify(results));

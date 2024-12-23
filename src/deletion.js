@@ -330,10 +330,12 @@ export async function aggregateFks(mongoModel, mongoD, results, already, oldName
             ];
 
             if (model._FKS) {
-                await aggregateFks(model, mongoD, results, already, collectionToUpper);
+                if(!entry.pipeline) entry.pipeline = [];
+
+                entry.pipeline.push(...await aggregateFks(model, mongoD, results, already, collectionToUpper));
             }
 
-            results.push(entry);
+            if (!oldName) results.push(entry);
         }
     }
 };

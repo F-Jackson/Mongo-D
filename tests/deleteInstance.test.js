@@ -149,62 +149,47 @@ describe("Mongo model Delete", () => {
 
         const results = await RelatedModel4.aggregate([
             {
-                $lookup: {
-                    from: "relatedmodel3", // Nome da coleção MongoDB, em minúsculas
-                    localField: "_id", // Campo local no schema RelatedModel2
-                    foreignField: "related4", // Campo _id em RelatedModel3
-                    as: "1related3", // Nome do array de resultados,
-                    pipeline: [
-                        {
-                            $project: {
-                                related4: 0,
-                            }
-                        },
-                        {
-                            $lookup: {
-                                from: "relatedmodel2", // Nome da coleção MongoDB, em minúsculas
-                                localField: "_id", // Campo local no schema RelatedModel2
-                                foreignField: "related3", // Campo _id em RelatedModel3
-                                as: "2related2", // Nome do array de resultados
-                            },
-                        },
-                        {
-                            $unwind: "$2related2", // Desaninha o array relatedmodel3
-                        },
-                    ]
-                },
+              $lookup: {
+                from: "relatedmodel3",
+                localField: "_id",
+                foreignField: "related4",
+                as: "relatedmodel3",
+              },
             },
+            { $unwind: "$relatedmodel3" }, // Desaninha o array relatedmodel3
             {
-                $unwind: "$1related3", // Desaninha o array relatedmodel3
-            },
-            /*{
-                $lookup: {
-                    from: "relatedmodel3", // Nome da coleção MongoDB, em minúsculas
-                    localField: "related3B", // Campo local no schema RelatedModel2
-                    foreignField: "_id", // Campo _id em RelatedModel3
-                    as: "relatedmodel3B", // Nome do array de resultados
-                },
-            },
-            {
-                $unwind: "$relatedmodel3B", // Desaninha o array relatedmodel3
-            },*/
-            {
-                $addFields: {
-                    "__FKS__": {
-                        related3: "$1related3"
-                        }
+              $lookup: {
+                from: "relatedmodel2",
+                let: { related3_id: "$relatedmodel3._id" },
+                pipeline: [
+                  {
+                    $match: {
+                      $expr: {
+                        $or: [
+                          { $eq: ["$related3", "$$related3_id"] },
+                          { $eq: ["$related3B", "$$related3_id"] },
+                        ],
+                      },
                     },
+                  },
+                ],
+                as: "relatedmodel2",
+              },
             },
+            { $unwind: "$relatedmodel2" }, // Desaninha o array relatedmodel2
             {
-                $project: {
-                    ["1related3"]: 0, // Remove o campo relacionado original
-                    ["2related2"]: 0, // Remove o campo relacionado original
-                },
+              $group: {
+                _id: "$_id", // Agrupa por `_id` do RelatedModel4
+                title: { $first: "$title" }, // Mantém o primeiro título
+                relatedmodel3: { $first: "$relatedmodel3" }, // Mantém o primeiro relatedmodel3
+                relatedmodel2: { $addToSet: "$relatedmodel2" }, // Adiciona todos os relatedmodel2 (sem duplicatas)
+              },
             },
-        ]);        
+          ]);
+              
         
         
-        
+        console.log(related4._id, related4B._id)
         const util = require('util');
         console.log(util.inspect(results, { showHidden: false, depth: null, colors: true }));
 

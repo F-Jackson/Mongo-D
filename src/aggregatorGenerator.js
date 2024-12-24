@@ -61,7 +61,7 @@ class AggregateGenerator {
                         $lookup: {
                             from: collectionName,
                             localField: `${oldName}${oldName ?? "."}_id`,
-                            foreignField: path,
+                            foreignField: value.path.join("."),
                             as: collectionName,
                         }
                     },

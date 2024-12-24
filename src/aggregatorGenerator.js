@@ -45,6 +45,7 @@ class AggregateGenerator {
     }
 
     async aggregateRelations(mongoModel, oldName = "") {
+        const entries = [];
         const relations = this.mongoD.__relations[mongoModel.modelName];
     
         for (const [modelName, values] of Object.entries(relations)) {
@@ -52,26 +53,51 @@ class AggregateGenerator {
             if (!model) return;
 
             const collectionName = model.collection.name;
+            let entry;
 
-            const entry = [
-                {
-                    $lookup: {
-                        from: collectionName,
-                        localField: `${oldName}.${_id}`,
-                        foreignField: path,
-                        as: collectionName,
+            if (values.length === 1) {
+                entry = [
+                    {
+                        $lookup: {
+                            from: collectionName,
+                            localField: `${oldName}${oldName ?? "."}_id`,
+                            foreignField: path,
+                            as: collectionName,
+                        }
+                    },
+                    {
+                        $unwind: `$${collectionName}`
                     }
-                },
-                {
-                    $unwind: `$${path}`
-                }
-            ];
-
-            for (const value of values) {
-                const path = value.path.join(".");
-
- 
+                ];
+            } else {
+                entry = [
+                    {
+                        $lookup: {
+                            from: collectionName,
+                            let: { [`${oldName}_id`]: `${oldName}${oldName ?? "."}_id` },
+                            pipeline: [
+                                {
+                                    $match: {
+                                        $expr: {
+                                            $or: values.map(value => (
+                                                { $eq: [ `$${value.path.join(".")}`, `$$${oldName}_id`] }
+                                            )),
+                                        },
+                                    },
+                                },
+                            ],
+                            as: collectionName,
+                        }
+                    },
+                    {
+                        $unwind: `$${collectionName}`
+                    }
+                ];
             }
+
+            entries.push(entry);
         }
-    };
+
+        return entries;
+    }
 }

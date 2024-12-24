@@ -338,44 +338,7 @@ export async function aggregateFks(mongoModel, mongoD, results, already, oldName
     }
 };
 
-export async function aggregateFks2(mongoModel, mongoD) {
-    const entries = [];
 
-    for (const [modelName, values] of Object.entries(mongoModel._FKS)) {
-        const model = mongoD.__models[modelName];
-        if (!model) return;
-
-        for (const value of values) {
-            const path = value.path.join(".");
-            const collectionName = model.collection.name;
-
-            const entry = [
-                {
-                    $lookup: {
-                        from: collectionName,
-                        localField: path,
-                        foreignField: "_id",
-                        as: path
-                    }
-                },
-                {
-                    $unwind: `$${path}`
-                }
-            ];
-
-            if (model._FKS) {
-                const populateEntries = await aggregateFks2(model, mongoD);
-                if (populateEntries.length > 0) {
-                    entry[0]["$lookup"].pipeline = populateEntries;
-                }
-            }
-
-            entries.push(...entry);
-        }
-    }
-
-    return entries;
-};
 
 
 export async function aggregateFind(mongoModel) {

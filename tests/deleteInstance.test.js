@@ -178,13 +178,23 @@ describe("Mongo model Delete", () => {
             },
             { $unwind: "$relatedmodel2" }, // Desaninha o array relatedmodel2
             {
-              $group: {
-                _id: "$_id", // Agrupa por `_id` do RelatedModel4
-                title: { $first: "$title" }, // Mantém o primeiro título
-                relatedmodel3: { $first: "$relatedmodel3" }, // Mantém o primeiro relatedmodel3
-                relatedmodel2: { $addToSet: "$relatedmodel2" }, // Adiciona todos os relatedmodel2 (sem duplicatas)
+                $lookup: {
+                  from: "relatedmodel",
+                  localField: "relatedmodel2._id",
+                  foreignField: "related",
+                  as: "relatedmodel",
+                },
               },
-            },
+              { $unwind: "$relatedmodel" }, // Desaninha o array relatedmodel
+              {
+                $group: {
+                  _id: "$_id", // Agrupa por `_id` do RelatedModel4
+                  title: { $first: "$title" }, // Mantém o primeiro título
+                  relatedmodel3: { $first: "$relatedmodel3" }, // Mantém o primeiro relatedmodel3
+                  relatedmodel2: { $addToSet: "$relatedmodel2" }, // Adiciona todos os relatedmodel2 (sem duplicatas)
+                  relatedmodel: { $addToSet: "$relatedmodel" }, // Adiciona todos os relatedmodel (sem duplicatas)
+                },
+              },
           ]);
               
         

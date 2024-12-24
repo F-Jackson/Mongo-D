@@ -60,7 +60,7 @@ export class AggregateGenerator {
                     {
                         $lookup: {
                             from: collectionName,
-                            localField: `${oldName}${oldName ?? "."}_id`,
+                            localField: `${oldName}${oldName ? "." : ""}_id`,
                             foreignField: values[0].path.join("."),
                             as: collectionName,
                         }
@@ -74,7 +74,7 @@ export class AggregateGenerator {
                     {
                         $lookup: {
                             from: collectionName,
-                            let: { [`${oldName}_id`]: `${oldName}${oldName ?? "."}_id` },
+                            let: { [`${oldName}_id`]: `${oldName}${oldName ? "." : ""}_id` },
                             pipeline: [
                                 {
                                     $match: {
@@ -96,6 +96,12 @@ export class AggregateGenerator {
             }
 
             entries.push(entry);
+
+            const modelRelations = this.mongoD.__relations[modelName];
+            if (modelRelations) {
+                const modelRelationsEntries = await this._aggregateRelations(model, collectionName);
+                entries.push(...modelRelationsEntries);
+            }
         }
 
         return entries;

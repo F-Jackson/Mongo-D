@@ -199,8 +199,8 @@ describe("Mongo model Delete", () => {
         
         //console.log(related4._id, related4B._id)
         const util = require('util');
-        const g = new AggregateGenerator(RelatedModel2, mongoose);
-        const r = await g._aggregateRelations(RelatedModel2);
+        const g = new AggregateGenerator(RelatedModel4, mongoose);
+        const r = await g._aggregateRelations(RelatedModel4);
         console.log(util.inspect(r, { showHidden: false, depth: null, colors: true }));
         //console.log(util.inspect(mongoose.__relations, { showHidden: false, depth: null, colors: true }));
         //console.log(util.inspect(results, { showHidden: false, depth: null, colors: true }));

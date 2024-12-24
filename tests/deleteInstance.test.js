@@ -62,7 +62,7 @@ describe("Mongo model Delete", () => {
     it("should delete deep 3 with required", async () => {
         const relatedSchema4 = new Schema(mongoose, {
             title: { type: String, required: true },
-            
+            ok: { type: String, required: true, default: "ok" }
         });
         const relatedSchema3 = new Schema(mongoose, {
             title: { type: String, required: true },
@@ -179,20 +179,20 @@ describe("Mongo model Delete", () => {
             { $unwind: "$relatedmodel2" }, // Desaninha o array relatedmodel2
             {
                 $lookup: {
-                  from: "relatedmodel",
-                  localField: "relatedmodel2._id",
-                  foreignField: "related",
-                  as: "relatedmodel",
+                    from: "relatedmodels",
+                    localField: "relatedmodel2._id",
+                    foreignField: "related2",
+                    as: "relatedmodels",
                 },
-              },
-              { $unwind: "$relatedmodel" }, // Desaninha o array relatedmodel
+            },
+            { $unwind: "$relatedmodels" }, // Desaninha o array relatedmodel
               {
                 $group: {
                   _id: "$_id", // Agrupa por `_id` do RelatedModel4
                   title: { $first: "$title" }, // Mantém o primeiro título
                   relatedmodel3: { $first: "$relatedmodel3" }, // Mantém o primeiro relatedmodel3
                   relatedmodel2: { $addToSet: "$relatedmodel2" }, // Adiciona todos os relatedmodel2 (sem duplicatas)
-                  relatedmodel: { $addToSet: "$relatedmodel" }, // Adiciona todos os relatedmodel (sem duplicatas)
+                  relatedmodels: { $addToSet: "$relatedmodels" }, // Adiciona todos os relatedmodel (sem duplicatas)
                 },
               },
           ]);

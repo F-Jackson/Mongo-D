@@ -3,6 +3,7 @@ import { cleanDb, disconnectDb } from "./utils.js";
 import { InitModels, Model, Schema } from "../src/index.js";
 import mongoose from "mongoose";
 import { aggregateFks2 } from "../src/deletion.js";
+import { pipeline } from "stream";
 
 describe("Mongo model Delete", () => {
     let client;
@@ -78,6 +79,11 @@ describe("Mongo model Delete", () => {
                 ref: "RelatedModel3",
                 required: true,
             },
+            related3B: {
+                type: mongoose.Schema.Types.ObjectId,
+                ref: "RelatedModel3",
+                required: true,
+            },
         });
         const relatedSchema = new Schema(mongoose, {
             title: { type: String, required: true },
@@ -116,7 +122,7 @@ describe("Mongo model Delete", () => {
             related3B: related3B._id
         });
 
-        const related2 = await RelatedModel2.Create({ title: "Related2", related3: related3 });
+        const related2 = await RelatedModel2.Create({ title: "Related2", related3: related3, related3B: related3B });
 
         const related = await RelatedModel.Create({
             title: "Related",
@@ -141,36 +147,54 @@ describe("Mongo model Delete", () => {
             }
         ]);
 
-        const results = await RelatedModel2.aggregate([
+        const results = await RelatedModel4.aggregate([
             {
                 $lookup: {
                     from: "relatedmodel3", // Nome da coleção MongoDB, em minúsculas
-                    localField: "related3", // Campo local no schema RelatedModel2
-                    foreignField: "_id", // Campo _id em RelatedModel3
-                    as: "relatedmodel3", // Nome do array de resultados
+                    localField: "_id", // Campo local no schema RelatedModel2
+                    foreignField: "related4", // Campo _id em RelatedModel3
+                    as: "related3", // Nome do array de resultados,
+                    pipeline: [
+                        {
+                            $project: {
+                                related4: 0,
+                            }
+                        },
+                        {
+                            $lookup: {
+                                from: "relatedmodel2", // Nome da coleção MongoDB, em minúsculas
+                                localField: "_id", // Campo local no schema RelatedModel2
+                                foreignField: "related3", // Campo _id em RelatedModel3
+                                as: "related2", // Nome do array de resultados
+                            },
+                        },
+                        {
+                            $unwind: "$related2", // Desaninha o array relatedmodel3
+                        },
+                    ]
                 },
             },
             {
-                $unwind: "$relatedmodel3", // Desaninha o array relatedmodel3
+                $unwind: "$related3", // Desaninha o array relatedmodel3
             },
-            {
+            /*{
                 $lookup: {
-                    from: "relatedmodel4",
-                    localField: "relatedmodel3.related4", // Campo related4 em relatedmodel3
-                    foreignField: "_id", // _id no esquema RelatedModel4
-                    as: "relatedmodel4",
+                    from: "relatedmodel3", // Nome da coleção MongoDB, em minúsculas
+                    localField: "related3B", // Campo local no schema RelatedModel2
+                    foreignField: "_id", // Campo _id em RelatedModel3
+                    as: "relatedmodel3B", // Nome do array de resultados
                 },
             },
             {
-                $unwind: "$relatedmodel4", // Desaninha o array relatedmodel4
-            },
+                $unwind: "$relatedmodel3B", // Desaninha o array relatedmodel3
+            },*/
             {
                 $addFields: {
                     "__FKS__": {
                         related3: {
                             $mergeObjects: [
-                                "$relatedmodel3", // Dados de relatedmodel3
-                                { related4: "$relatedmodel4" }, // Anexa relatedmodel4 como related4 dentro de related3
+                                "$related3", // Dados de relatedmodel3
+                                { related4: "$related2" }, // Anexa relatedmodel4 como related4 dentro de related3
                             ],
                         },
                     },
@@ -178,8 +202,8 @@ describe("Mongo model Delete", () => {
             },
             {
                 $project: {
-                    relatedmodel3: 0, // Remove o campo relacionado original
-                    relatedmodel4: 0, // Remove o campo relacionado original
+                    related3: 0, // Remove o campo relacionado original
+                    related2: 0, // Remove o campo relacionado original
                 },
             },
         ]);        

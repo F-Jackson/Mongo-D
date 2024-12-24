@@ -1,4 +1,4 @@
-class AggregateGenerator {
+export class AggregateGenerator {
     constructor(mongoModel, mongoD) {
         this.mongoModel = mongoModel;
         this.mongoD = mongoD;
@@ -61,7 +61,7 @@ class AggregateGenerator {
                         $lookup: {
                             from: collectionName,
                             localField: `${oldName}${oldName ?? "."}_id`,
-                            foreignField: value.path.join("."),
+                            foreignField: values[0].path.join("."),
                             as: collectionName,
                         }
                     },

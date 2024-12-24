@@ -44,7 +44,7 @@ class AggregateGenerator {
         return entries;
     }
 
-    async aggregateRelations(mongoModel, oldName = "") {
+    async _aggregateRelations(mongoModel, oldName = "") {
         const entries = [];
         const relations = this.mongoD.__relations[mongoModel.modelName];
     

@@ -200,7 +200,7 @@ describe("Mongo model Delete", () => {
         console.log(related4._id, related4B._id)
         const util = require('util');
         console.log(util.inspect(mongoose.__relations, { showHidden: false, depth: null, colors: true }));
-        console.log(util.inspect(results, { showHidden: false, depth: null, colors: true }));
+        //console.log(util.inspect(results, { showHidden: false, depth: null, colors: true }));
 
         /*
             {

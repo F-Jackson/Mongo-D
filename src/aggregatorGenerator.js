@@ -10,10 +10,11 @@ class AggregateGenerator {
         for (const [modelName, values] of Object.entries(mongoModel._FKS)) {
             const model = this.mongoD.__models[modelName];
             if (!model) return;
-    
+
+            const collectionName = model.collection.name;
+
             for (const value of values) {
                 const path = value.path.join(".");
-                const collectionName = model.collection.name;
     
                 const entry = [
                     {
@@ -42,4 +43,35 @@ class AggregateGenerator {
     
         return entries;
     }
+
+    async aggregateRelations(mongoModel, oldName = "") {
+        const relations = this.mongoD.__relations[mongoModel.modelName];
+    
+        for (const [modelName, values] of Object.entries(relations)) {
+            const model = this.mongoD.__models[modelName];
+            if (!model) return;
+
+            const collectionName = model.collection.name;
+
+            const entry = [
+                {
+                    $lookup: {
+                        from: collectionName,
+                        localField: `${oldName}.${_id}`,
+                        foreignField: path,
+                        as: collectionName,
+                    }
+                },
+                {
+                    $unwind: `$${path}`
+                }
+            ];
+
+            for (const value of values) {
+                const path = value.path.join(".");
+
+ 
+            }
+        }
+    };
 }

@@ -95,7 +95,7 @@ export class AggregateGenerator {
                 ];
             }
 
-            entries.push(entry);
+            entries.push(...entry);
 
             const modelRelations = this.mongoD.__relations[modelName];
             if (modelRelations) {

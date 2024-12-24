@@ -196,6 +196,64 @@ describe("Mongo model Delete", () => {
                 },
               },
           ]);
+
+          [
+            [
+              {
+                '$lookup': {
+                  from: 'relatedmodel3',
+                  localField: '_id',
+                  foreignField: 'related4',
+                  as: 'relatedmodel3'
+                }
+              },
+              { '$unwind': '$relatedmodel3' }
+            ],
+            [
+              {
+                '$lookup': {
+                  from: 'relatedmodel2',
+                  let: { relatedmodel3_id: 'relatedmodel3._id' },
+                  pipeline: [
+                    {
+                      '$match': {
+                        '$expr': {
+                          '$or': [
+                            { '$eq': [ '$related3', '$$relatedmodel3_id' ] },
+                            { '$eq': [ '$related3B', '$$relatedmodel3_id' ] }
+                          ]
+                        }
+                      }
+                    }
+                  ],
+                  as: 'relatedmodel2'
+                }
+              },
+              { '$unwind': '$relatedmodel2' }
+            ],
+            [
+              {
+                '$lookup': {
+                  from: 'relatedmodels',
+                  localField: 'relatedmodel2._id',
+                  foreignField: 'related2',
+                  as: 'relatedmodels'
+                }
+              },
+              { '$unwind': '$relatedmodels' }
+            ],
+            [
+              {
+                '$lookup': {
+                  from: 'testmodels',
+                  localField: 'relatedmodels._id',
+                  foreignField: 'related',
+                  as: 'testmodels'
+                }
+              },
+              { '$unwind': '$testmodels' }
+            ]
+          ]
         
         //console.log(related4._id, related4B._id)
         const util = require('util');

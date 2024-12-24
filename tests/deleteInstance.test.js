@@ -153,7 +153,7 @@ describe("Mongo model Delete", () => {
                     from: "relatedmodel3", // Nome da coleção MongoDB, em minúsculas
                     localField: "_id", // Campo local no schema RelatedModel2
                     foreignField: "related4", // Campo _id em RelatedModel3
-                    as: "related3", // Nome do array de resultados,
+                    as: "1related3", // Nome do array de resultados,
                     pipeline: [
                         {
                             $project: {
@@ -165,17 +165,17 @@ describe("Mongo model Delete", () => {
                                 from: "relatedmodel2", // Nome da coleção MongoDB, em minúsculas
                                 localField: "_id", // Campo local no schema RelatedModel2
                                 foreignField: "related3", // Campo _id em RelatedModel3
-                                as: "related2", // Nome do array de resultados
+                                as: "2related2", // Nome do array de resultados
                             },
                         },
                         {
-                            $unwind: "$related2", // Desaninha o array relatedmodel3
+                            $unwind: "$2related2", // Desaninha o array relatedmodel3
                         },
                     ]
                 },
             },
             {
-                $unwind: "$related3", // Desaninha o array relatedmodel3
+                $unwind: "$1related3", // Desaninha o array relatedmodel3
             },
             /*{
                 $lookup: {
@@ -191,19 +191,14 @@ describe("Mongo model Delete", () => {
             {
                 $addFields: {
                     "__FKS__": {
-                        related3: {
-                            $mergeObjects: [
-                                "$related3", // Dados de relatedmodel3
-                                { related4: "$related2" }, // Anexa relatedmodel4 como related4 dentro de related3
-                            ],
-                        },
+                        related3: "$1related3"
+                        }
                     },
-                },
             },
             {
                 $project: {
-                    related3: 0, // Remove o campo relacionado original
-                    related2: 0, // Remove o campo relacionado original
+                    ["1related3"]: 0, // Remove o campo relacionado original
+                    ["2related2"]: 0, // Remove o campo relacionado original
                 },
             },
         ]);        

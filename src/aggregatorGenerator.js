@@ -62,20 +62,18 @@ export class AggregateGenerator {
         this.fksToAggregate = await this._aggregateFks(this.mongoModel, stop, options);
     }
 
-    async _makeAddField(fieldName = "__FKS__") {
-        const addField =         {
-            $addFields: {
-                [fieldName]: {
-                    related3: {
-                        $mergeObjects: [
-                            "$relatedmodel3", // Dados de relatedmodel3
-                            { related4: "$relatedmodel4" }, // Anexa relatedmodel4 como related4 dentro de related3
-                        ],
-                    },
-                },
-            },
-        };
+    async _makeAddField(model, addFields) {
+        const newField = {
+            [`$${model.modelName}`]: {
+                $mergeObjects: [
+                    `$${model.collection.name}`
+                ],
+            }
+        }
 
+        addFields.push(newField);
+        
+        return addFields[addFields.length][[`$${model.modelName}`]]["$mergeObjects"];
     }
 
     _normalRelation(collectionName, oldName, path) {
@@ -125,6 +123,7 @@ export class AggregateGenerator {
         projects, 
         stop,
         options,
+        addFields,
         oldName = ""
     ) {
         const entries = [];
@@ -156,6 +155,7 @@ export class AggregateGenerator {
                 );
             }
 
+            this._makeAddField(model, addFields);
             projects.add(collectionName);
             entries.push(...entry);
 
@@ -166,6 +166,7 @@ export class AggregateGenerator {
                     projects, 
                     stop,
                     options,
+                    addFields,
                     collectionName
                 );
 
@@ -179,11 +180,13 @@ export class AggregateGenerator {
     async _makeRelationsAggregate(options) {
         const projects = new Set([]);
         const stop = false;
+        const addFields = [];
 
         const relations = await this._aggregateRelations(
             this.mongoModel, 
             projects,
             stop,
+            addFields,
             options
         );
 

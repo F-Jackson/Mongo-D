@@ -16,14 +16,13 @@ export class AggregateGenerator {
     
         for (const [modelName, values] of Object.entries(mongoModel._FKS)) {
             const model = this.mongoD.__models[modelName];
-            if (!model && !stop) return;
+            if (!model && !stop) break;
 
             const collectionName = model.collection.name;
 
             if (options.stop.collection === collectionName) {
                 if (options.stop.bruteForce) stop = true;
-
-                return;
+                break;
             }
 
             for (const value of values) {
@@ -50,7 +49,7 @@ export class AggregateGenerator {
                     }
                 }
     
-                if (!stop) entries.push(...entry);
+                entries.push(...entry);
             }
         }
     
@@ -137,7 +136,7 @@ export class AggregateGenerator {
 
     }
 
-    getOptions(options = {}) {
+    _getOptions(options = {}) {
         const newOptions = {};
     
         const defaultOptions = {
@@ -185,7 +184,7 @@ export class AggregateGenerator {
 
     async makeAggregations(direction = "both", options) {
         const tasks = [];
-        const newOptions = this.getOptions(options);
+        const newOptions = this._getOptions(options);
     
         if (direction !== "back") tasks.push(this._makeFksAggregate(newOptions));
         if (direction !== "forward") tasks.push(this._makeRelationsAggregate(newOptions));

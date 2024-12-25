@@ -1,3 +1,7 @@
+import { GenerateFoward } from "./foward.js";
+import { GenerateBack } from "./back.js";
+
+
 export class AggregateGenerator {
     constructor(mongoModel, options, mongoD) {
         this.mongoModel = mongoModel;
@@ -32,8 +36,14 @@ export class AggregateGenerator {
     async makeAggregations(direction = "both") {
         const tasks = [];
     
-        if (direction !== "back") tasks.push(this._makeFksAggregate(this.options));
-        if (direction !== "forward") tasks.push(this._makeRelationsAggregate(this.options));
+        if (direction !== "back") {
+            const fowardAggregator = new GenerateFoward(this.options, this.mongoD);
+            tasks.push(fowardAggregator.makeAggregate(this.mongoModel));
+        }
+        if (direction !== "forward") {
+            const fowardAggregator = new GenerateBack(this.options, this.mongoD);
+            tasks.push(fowardAggregator.makeAggregate(this.mongoModel));
+        }
     
         await Promise.all(tasks);
     }    

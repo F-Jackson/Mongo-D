@@ -149,8 +149,8 @@ describe("Mongo model Delete", () => {
 
         const util = require('util');
         const g = new AggregateGenerator(RelatedModel4, mongoose);
-        const r = await g._makeRelationsAggregate({});
-        console.log(util.inspect(r, { showHidden: false, depth: null, colors: true }));
+        await g._makeRelationsAggregate({});
+        console.log(util.inspect(g.relationsToAggregate, { showHidden: false, depth: null, colors: true }));
 
         /*const m = await aggregateFks2(RelatedModel, mongoose);
         const util = require('util');

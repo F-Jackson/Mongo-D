@@ -64,7 +64,7 @@ export class AggregateGenerator {
 
     _makeAddField(model, addFields) {
         const newField = {
-            [`${model.modelName}`]: {
+            [`_$_${model.modelName}`]: {
                 $mergeObjects: [
                     `$${model.collection.name}`
                 ],
@@ -73,12 +73,12 @@ export class AggregateGenerator {
 
         addFields.push(newField);
         
-        return addFields[addFields.length - 1][[`${model.modelName}`]]["$mergeObjects"];
+        return addFields[addFields.length - 1][[`_$_${model.modelName}`]]["$mergeObjects"];
     }
 
     _finishMakeField(model, addFields) {
         const newField = {
-            [`${model.modelName}`]: `${model.collection.name}`
+            [`_$_${model.modelName}`]: `${model.collection.name}`
         }
 
         addFields.push(newField);
@@ -213,8 +213,23 @@ export class AggregateGenerator {
             }
         }
 
+        const groupFields = [
+            {
+                '$group': {
+                    _id: '$_id', // Agrupando por _id para remover duplicados
+                    uniqueDocuments: { '$first': '$$ROOT' } // Mantendo um único documento por _id
+                }
+            },
+            {
+                '$replaceRoot': {
+                    newRoot: '$uniqueDocuments' // Retornando os documentos únicos
+                }
+            }
+        ]
+
         relations.push(toAddFields);
         relations.push(toProjects);
+        relations.push(...groupFields);
 
         this.relationsToAggregate = relations;
     }

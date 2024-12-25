@@ -213,7 +213,7 @@ export class AggregateGenerator {
     
         const defaultOptions = {
             stop: {
-                collection: "",
+                collection: ".__.__.__.__.__.__.",
                 bruteForce: false,
             }
         };

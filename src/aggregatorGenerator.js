@@ -2,6 +2,9 @@ export class AggregateGenerator {
     constructor(mongoModel, mongoD) {
         this.mongoModel = mongoModel;
         this.mongoD = mongoD;
+
+        this.fksToAggregate = [];
+        this.relationsToAggregate = [];
     }
 
     async _aggregateFks(mongoModel) {
@@ -105,5 +108,13 @@ export class AggregateGenerator {
         }
 
         return entries;
+    }
+
+    async makeFksAggregate() {
+        this.fksToAggregate = await this._aggregateFks(this.mongoModel);
+    }
+
+    async makeRelationsAggregate() {
+        this.relationsToAggregate = await this._aggregateRelations(this.mongoModel);
     }
 }

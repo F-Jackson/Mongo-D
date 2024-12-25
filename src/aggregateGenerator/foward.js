@@ -1,6 +1,7 @@
 export class GenerateFoward {
-    constructor(options) {
+    constructor(options, mongoD) {
         this.options = options;
+        this.mongoD = mongoD;
         this.stop = false;
     }
 
@@ -49,7 +50,7 @@ export class GenerateFoward {
         return entries;
     }
 
-    async makeAggregate() {
-        this.fksToAggregate = await this._aggregateFks(this.mongoModel);
+    async makeAggregate(mongoModel) {
+        return await this._aggregateFks(mongoModel);
     }
 }

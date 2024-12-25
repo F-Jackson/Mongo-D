@@ -1,21 +1,31 @@
 export class GenerateBack {
-    _makeAddField(model, addFields) {
+    constructor(options, mongoD) {
+        this.options = options;
+        this.mongoD = mongoD;
+        this.stop = false;
+    }
+
+    _fieldName(modelName) {
+        return `_$_${modelName}`;
+    }
+
+    _makeAddField(modelName, addFields) {
         const newField = {
-            [`_$_${model.modelName}`]: {
+            [this._fieldName(modelName)]: {
                 $mergeObjects: [
-                    `$${model.collection.name}`
+                    `$${modelName}`
                 ],
             }
         }
 
         addFields.push(newField);
         
-        return addFields[addFields.length - 1][[`_$_${model.modelName}`]]["$mergeObjects"];
+        return addFields[addFields.length - 1][this._fieldName(modelName)]["$mergeObjects"];
     }
 
-    _finishMakeAddField(model, addFields) {
+    _finishMakeAddField(modelName, collectionName, addFields) {
         const newField = {
-            [`_$_${model.modelName}`]: `${model.collection.name}`
+            [this._fieldName(modelName)]: `${collectionName}`
         }
 
         addFields.push(newField);
@@ -65,9 +75,7 @@ export class GenerateBack {
 
     async _aggregate(
         mongoModel, 
-        projects, 
-        stop,
-        options,
+        projects,
         addFields,
         oldName = ""
     ) {
@@ -76,13 +84,13 @@ export class GenerateBack {
     
         for (const [modelName, values] of Object.entries(relations)) {
             const model = this.mongoD.__models[modelName];
-            if (!model && !stop) break;
+            if (!model && !this.stop) break;
 
             let entry;
             const collectionName = model.collection.name;
 
-            if (options.stop.collection === collectionName) {
-                if (options.stop.bruteForce) stop = true;
+            if (this.options.stop.collection === collectionName) {
+                if (this.options.stop.bruteForce) this.stop = true;
                 break;
             }
 
@@ -105,36 +113,31 @@ export class GenerateBack {
             projects.add(collectionName);
             entries.push(...entry);
             if (modelRelations) {
-                const toAdd = this._makeAddField(model, addFields);
+                const toAdd = this._makeAddField(modelName, addFields);
 
                 const modelRelationsEntries = await this._aggregate(
                     model, 
-                    projects, 
-                    stop,
-                    options,
+                    projects,
                     toAdd,
                     collectionName
                 );
 
                 entries.push(...modelRelationsEntries);
             } else {
-                this._finishMakeAddField(model, addFields);
+                this._finishMakeAddField(modelName, collectionName, addFields);
             }
         }
 
         return entries;
     }
 
-    async makeAggregate(options) {
+    async makeAggregate(mongoModel) {
         const projects = new Set([]);
-        const stop = false;
         const addFields = [];
 
         const relations = await this._aggregate(
-            this.mongoModel, 
+            mongoModel, 
             projects,
-            stop,
-            options,
             addFields,
         );
 
@@ -168,6 +171,6 @@ export class GenerateBack {
         relations.push(toProjects);
         relations.push(...groupFields);
 
-        this.relationsToAggregate = relations;
+        return relations;
     }
 }

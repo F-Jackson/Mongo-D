@@ -56,68 +56,10 @@ export class AggregateGenerator {
         return entries;
     }
 
-    async _aggregateRelations(mongoModel, projects, oldName = "") {
-        const entries = [];
-        const relations = this.mongoD.__relations[mongoModel.modelName];
-    
-        for (const [modelName, values] of Object.entries(relations)) {
-            const model = this.mongoD.__models[modelName];
-            if (!model) return;
+    async _makeFksAggregate(options) {
+        const stop = false;
 
-            const collectionName = model.collection.name;
-            let entry;
-
-            if (values.length === 1) {
-                entry = [
-                    {
-                        $lookup: {
-                            from: collectionName,
-                            localField: `${oldName}${oldName ? "." : ""}_id`,
-                            foreignField: values[0].path.join("."),
-                            as: collectionName,
-                        }
-                    },
-                    {
-                        $unwind: `$${collectionName}`
-                    }
-                ];
-            } else {
-                entry = [
-                    {
-                        $lookup: {
-                            from: collectionName,
-                            let: { [`${oldName}_id`]: `${oldName}${oldName ? "." : ""}_id` },
-                            pipeline: [
-                                {
-                                    $match: {
-                                        $expr: {
-                                            $or: values.map(value => (
-                                                { $eq: [ `$${value.path.join(".")}`, `$$${oldName}_id`] }
-                                            )),
-                                        },
-                                    },
-                                },
-                            ],
-                            as: collectionName,
-                        }
-                    },
-                    {
-                        $unwind: `$${collectionName}`
-                    }
-                ];
-            }
-
-            projects.add(collectionName);
-            entries.push(...entry);
-
-            const modelRelations = this.mongoD.__relations[modelName];
-            if (modelRelations) {
-                const modelRelationsEntries = await this._aggregateRelations(model, projects, collectionName);
-                entries.push(...modelRelationsEntries);
-            }
-        }
-
-        return entries;
+        this.fksToAggregate = await this._aggregateFks(this.mongoModel, stop, options);
     }
 
     async _makeAddField(fieldName = "__FKS__") {
@@ -134,6 +76,121 @@ export class AggregateGenerator {
             },
         };
 
+    }
+
+    _normalRelation(collectionName, oldName, path) {
+        return [
+            {
+                $lookup: {
+                    from: collectionName,
+                    localField: `${oldName}${oldName ? "." : ""}_id`,
+                    foreignField: path.join("."),
+                    as: collectionName,
+                }
+            },
+            {
+                $unwind: `$${collectionName}`
+            }
+        ];
+    }
+
+    _multiRelation(collectionName, oldName, values) {
+        return [
+            {
+                $lookup: {
+                    from: collectionName,
+                    let: { [`${oldName}_id`]: `${oldName}${oldName ? "." : ""}_id` },
+                    pipeline: [
+                        {
+                            $match: {
+                                $expr: {
+                                    $or: values.map(value => (
+                                        { $eq: [ `$${value.path.join(".")}`, `$$${oldName}_id`] }
+                                    )),
+                                },
+                            },
+                        },
+                    ],
+                    as: collectionName,
+                }
+            },
+            {
+                $unwind: `$${collectionName}`
+            }
+        ]
+    }
+
+    async _aggregateRelations(
+        mongoModel, 
+        projects, 
+        stop,
+        options,
+        oldName = ""
+    ) {
+        const entries = [];
+        const relations = this.mongoD.__relations[mongoModel.modelName];
+    
+        for (const [modelName, values] of Object.entries(relations)) {
+            const model = this.mongoD.__models[modelName];
+            if (!model) return;
+
+            const collectionName = model.collection.name;
+            let entry;
+
+            if (values.length === 1) {
+                entry = this._normalRelation(
+                    collectionName,
+                    oldName,
+                    values[0].path
+                );
+            } else {
+                entry = this._multiRelation(
+                    collectionName,
+                    oldName,
+                    values
+                );
+            }
+
+            projects.add(collectionName);
+            entries.push(...entry);
+
+            const modelRelations = this.mongoD.__relations[modelName];
+            if (modelRelations) {
+                const modelRelationsEntries = await this._aggregateRelations(
+                    model, 
+                    projects, 
+                    stop,
+                    options,
+                    collectionName
+                );
+                
+                entries.push(...modelRelationsEntries);
+            }
+        }
+
+        return entries;
+    }
+
+    async _makeRelationsAggregate(options) {
+        const projects = new Set([]);
+        const stop = false;
+
+        const relations = await this._aggregateRelations(
+            this.mongoModel, 
+            projects,
+            stop,
+            options
+        );
+
+        const toProjects = {
+            $project: Object.fromEntries(
+                Array.from(projects).map((pj) => [pj, 0])
+            ),
+        };
+
+        relations.push(toProjects);
+
+        this.relationsToAggregate = relations;
     }
 
     _getOptions(options = {}) {
@@ -158,28 +215,6 @@ export class AggregateGenerator {
         });
     
         return newOptions;
-    }
-
-    async _makeFksAggregate(options) {
-        const stop = false;
-
-        this.fksToAggregate = await this._aggregateFks(this.mongoModel, stop, options);
-    }
-
-    async _makeRelationsAggregate(options) {
-        const projects = new Set([]);
-
-        const relations = await this._aggregateRelations(this.mongoModel, projects);
-
-        const toProjects = {
-            $project: Object.fromEntries(
-                Array.from(projects).map((pj) => [pj, 0])
-            ),
-        };
-
-        relations.push(toProjects);
-
-        this.relationsToAggregate = relations;
     }
 
     async makeAggregations(direction = "both", options) {

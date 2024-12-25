@@ -2,7 +2,7 @@ import { describe, it, beforeEach, expect } from "vitest";
 import { cleanDb, disconnectDb } from "./utils.js";
 import { InitModels, Model, Schema } from "../src/index.js";
 import mongoose from "mongoose";
-import { AggregateGenerator } from "../src/aggregatorGenerator.js";
+import { AggregateGenerator } from "../src/aggregateGenerator/index.js";
 
 
 describe("Mongo model Delete", () => {

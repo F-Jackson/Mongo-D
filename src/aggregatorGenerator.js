@@ -62,18 +62,18 @@ export class AggregateGenerator {
         this.fksToAggregate = await this._aggregateFks(this.mongoModel, stop, options);
     }
 
-    async _makeAddField(model, addFields) {
+    _makeAddField(model, addFields) {
         const newField = {
-            [`$${model.modelName}`]: {
+            [`${model.modelName}`]: {
                 $mergeObjects: [
-                    `$${model.collection.name}`
+                    `${model.collection.name}`
                 ],
             }
         }
 
         addFields.push(newField);
         
-        return addFields[addFields.length][[`$${model.modelName}`]]["$mergeObjects"];
+        return addFields[addFields.length - 1][[`${model.modelName}`]]["$mergeObjects"];
     }
 
     _normalRelation(collectionName, oldName, path) {
@@ -198,7 +198,7 @@ export class AggregateGenerator {
 
         const toAddFields = {
             "$addFields": {
-                "$relatedTo": addFields,
+                "__relatedTo__": addFields,
             }
         }
 

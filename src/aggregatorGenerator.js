@@ -7,14 +7,24 @@ export class AggregateGenerator {
         this.relationsToAggregate = [];
     }
 
-    async _aggregateFks(mongoModel) {
+    async _aggregateFks(
+        mongoModel, 
+        stop,
+        options
+    ) {
         const entries = [];
     
         for (const [modelName, values] of Object.entries(mongoModel._FKS)) {
             const model = this.mongoD.__models[modelName];
-            if (!model) return;
+            if (!model && !stop) return;
 
             const collectionName = model.collection.name;
+
+            if (options.stop.collection === collectionName) {
+                if (options.stop.bruteForce) stop = true;
+
+                return;
+            }
 
             for (const value of values) {
                 const path = value.path.join(".");
@@ -111,11 +121,33 @@ export class AggregateGenerator {
         return entries;
     }
 
-    async _makeFksAggregate() {
-        this.fksToAggregate = await this._aggregateFks(this.mongoModel);
+    async _makeAddField(fieldName = "__FKS__") {
+        const addField =         {
+            $addFields: {
+                [fieldName]: {
+                    related3: {
+                        $mergeObjects: [
+                            "$relatedmodel3", // Dados de relatedmodel3
+                            { related4: "$relatedmodel4" }, // Anexa relatedmodel4 como related4 dentro de related3
+                        ],
+                    },
+                },
+            },
+        };
+
     }
 
-    async _makeRelationsAggregate() {
+    getOptions(options) {
+
+    }
+
+    async _makeFksAggregate(options) {
+        const stop = false;
+
+        this.fksToAggregate = await this._aggregateFks(this.mongoModel, stop);
+    }
+
+    async _makeRelationsAggregate(options) {
         const projects = new Set([]);
 
         const relations = await this._aggregateRelations(this.mongoModel, projects);
@@ -131,8 +163,12 @@ export class AggregateGenerator {
         this.relationsToAggregate = relations;
     }
 
-    async makeAggretions() {
-        await this._makeFksAggregate();
-        await this._makeRelationsAggregate();
-    }
+    async makeAggregations(direction = "both", options) {
+        const tasks = [];
+    
+        if (direction !== "back") tasks.push(this._makeFksAggregate(options));
+        if (direction !== "forward") tasks.push(this._makeRelationsAggregate(options));
+    
+        await Promise.all(tasks);
+    }    
 }

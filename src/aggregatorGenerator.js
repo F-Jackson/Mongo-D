@@ -66,7 +66,7 @@ export class AggregateGenerator {
         const newField = {
             [`${model.modelName}`]: {
                 $mergeObjects: [
-                    `${model.collection.name}`
+                    `$${model.collection.name}`
                 ],
             }
         }
@@ -74,6 +74,14 @@ export class AggregateGenerator {
         addFields.push(newField);
         
         return addFields[addFields.length - 1][[`${model.modelName}`]]["$mergeObjects"];
+    }
+
+    _finishMakeField(model, addFields) {
+        const newField = {
+            [`${model.modelName}`]: `${model.collection.name}`
+        }
+
+        addFields.push(newField);
     }
 
     _normalRelation(collectionName, oldName, path) {
@@ -155,12 +163,13 @@ export class AggregateGenerator {
                 );
             }
 
-            const toAdd = this._makeAddField(model, addFields);
+            const modelRelations = this.mongoD.__relations[modelName];
+
             projects.add(collectionName);
             entries.push(...entry);
-
-            const modelRelations = this.mongoD.__relations[modelName];
             if (modelRelations) {
+                const toAdd = this._makeAddField(model, addFields);
+
                 const modelRelationsEntries = await this._aggregateRelations(
                     model, 
                     projects, 
@@ -171,6 +180,8 @@ export class AggregateGenerator {
                 );
 
                 entries.push(...modelRelationsEntries);
+            } else {
+                this._finishMakeField(model, addFields);
             }
         }
 

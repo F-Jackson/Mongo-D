@@ -45,6 +45,6 @@ export class AggregateGenerator {
             tasks.push(fowardAggregator.makeAggregate(this.mongoModel));
         }
     
-        await Promise.all(tasks);
+        return await Promise.all(tasks);
     }    
 }

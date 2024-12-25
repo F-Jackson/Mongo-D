@@ -155,7 +155,7 @@ export class AggregateGenerator {
                 );
             }
 
-            this._makeAddField(model, addFields);
+            const toAdd = this._makeAddField(model, addFields);
             projects.add(collectionName);
             entries.push(...entry);
 
@@ -166,7 +166,7 @@ export class AggregateGenerator {
                     projects, 
                     stop,
                     options,
-                    addFields,
+                    toAdd,
                     collectionName
                 );
 
@@ -186,8 +186,8 @@ export class AggregateGenerator {
             this.mongoModel, 
             projects,
             stop,
+            options,
             addFields,
-            options
         );
 
         const toProjects = {

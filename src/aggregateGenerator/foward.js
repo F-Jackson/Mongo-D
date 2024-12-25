@@ -1,19 +1,20 @@
 export class GenerateFoward {
-    async _aggregate(
-        mongoModel, 
-        stop,
-        options
-    ) {
+    constructor(options) {
+        this.options = options;
+        this.stop = false;
+    }
+
+    async _aggregate(mongoModel) {
         const entries = [];
     
         for (const [modelName, values] of Object.entries(mongoModel._FKS)) {
             const model = this.mongoD.__models[modelName];
-            if (!model && !stop) break;
+            if (!model && !this.stop) break;
 
             const collectionName = model.collection.name;
 
-            if (options.stop.collection === collectionName) {
-                if (options.stop.bruteForce) stop = true;
+            if (this.options.stop.collection === collectionName) {
+                if (this.options.stop.bruteForce) this.stop = true;
                 break;
             }
 
@@ -35,7 +36,7 @@ export class GenerateFoward {
                 ];
     
                 if (model._FKS) {
-                    const nestedEntries = await this._aggregateFks(model, stop, options);
+                    const nestedEntries = await this._aggregateFks(model);
                     if (nestedEntries.length > 0) {
                         entry[0]["$lookup"].pipeline = nestedEntries;
                     }
@@ -48,9 +49,7 @@ export class GenerateFoward {
         return entries;
     }
 
-    async makeAggregate(options) {
-        const stop = false;
-
-        this.fksToAggregate = await this._aggregateFks(this.mongoModel, stop, options);
+    async makeAggregate() {
+        this.fksToAggregate = await this._aggregateFks(this.mongoModel);
     }
 }

@@ -1,13 +1,11 @@
 export class AggregateGenerator {
-    constructor(mongoModel, mongoD) {
+    constructor(mongoModel, options, mongoD) {
         this.mongoModel = mongoModel;
         this.mongoD = mongoD;
-
-        this.fksToAggregate = [];
-        this.relationsToAggregate = [];
+        this.options = this._getOptions(options);
     }
 
-    _getOptions(options = {}) {
+    _getOptions(options) {
         const newOptions = {};
     
         const defaultOptions = {
@@ -27,16 +25,15 @@ export class AggregateGenerator {
                 newOptions[key] = options[key] !== undefined ? options[key] : defaultValue;
             }
         });
-    
+
         return newOptions;
     }
 
-    async makeAggregations(direction = "both", options) {
+    async makeAggregations(direction = "both") {
         const tasks = [];
-        const newOptions = this._getOptions(options);
     
-        if (direction !== "back") tasks.push(this._makeFksAggregate(newOptions));
-        if (direction !== "forward") tasks.push(this._makeRelationsAggregate(newOptions));
+        if (direction !== "back") tasks.push(this._makeFksAggregate(this.options));
+        if (direction !== "forward") tasks.push(this._makeRelationsAggregate(this.options));
     
         await Promise.all(tasks);
     }    

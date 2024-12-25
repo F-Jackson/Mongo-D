@@ -110,11 +110,16 @@ export class AggregateGenerator {
         return entries;
     }
 
-    async makeFksAggregate() {
+    async _makeFksAggregate() {
         this.fksToAggregate = await this._aggregateFks(this.mongoModel);
     }
 
-    async makeRelationsAggregate() {
+    async _makeRelationsAggregate() {
         this.relationsToAggregate = await this._aggregateRelations(this.mongoModel);
+    }
+
+    async makeAggretions() {
+        await this._makeFksAggregate();
+        await this._makeRelationsAggregate();
     }
 }

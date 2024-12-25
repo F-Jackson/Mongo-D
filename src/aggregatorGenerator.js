@@ -50,7 +50,7 @@ export class AggregateGenerator {
                     }
                 }
     
-                entries.push(...entry);
+                if (!stop) entries.push(...entry);
             }
         }
     
@@ -137,14 +137,34 @@ export class AggregateGenerator {
 
     }
 
-    getOptions(options) {
-
+    getOptions(options = {}) {
+        const newOptions = {};
+    
+        const defaultOptions = {
+            stop: {
+                collection: "",
+                bruteForce: false,
+            }
+        };
+    
+        Object.entries(defaultOptions).forEach(([key, defaultValue]) => {
+            if (typeof defaultValue === "object" && !Array.isArray(defaultValue)) {
+                newOptions[key] = {
+                    ...defaultValue,
+                    ...(options[key] || {}),
+                };
+            } else {
+                newOptions[key] = options[key] !== undefined ? options[key] : defaultValue;
+            }
+        });
+    
+        return newOptions;
     }
 
     async _makeFksAggregate(options) {
         const stop = false;
 
-        this.fksToAggregate = await this._aggregateFks(this.mongoModel, stop);
+        this.fksToAggregate = await this._aggregateFks(this.mongoModel, stop, options);
     }
 
     async _makeRelationsAggregate(options) {
@@ -165,9 +185,10 @@ export class AggregateGenerator {
 
     async makeAggregations(direction = "both", options) {
         const tasks = [];
+        const newOptions = this.getOptions(options);
     
-        if (direction !== "back") tasks.push(this._makeFksAggregate(options));
-        if (direction !== "forward") tasks.push(this._makeRelationsAggregate(options));
+        if (direction !== "back") tasks.push(this._makeFksAggregate(newOptions));
+        if (direction !== "forward") tasks.push(this._makeRelationsAggregate(newOptions));
     
         await Promise.all(tasks);
     }    

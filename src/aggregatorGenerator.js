@@ -43,9 +43,9 @@ export class AggregateGenerator {
                 ];
     
                 if (model._FKS) {
-                    const populateEntries = await this._aggregateFks(model);
-                    if (populateEntries.length > 0) {
-                        entry[0]["$lookup"].pipeline = populateEntries;
+                    const nestedEntries = await this._aggregateFks(model, stop, options);
+                    if (nestedEntries.length > 0) {
+                        entry[0]["$lookup"].pipeline = nestedEntries;
                     }
                 }
     

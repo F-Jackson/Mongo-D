@@ -47,7 +47,7 @@ export class AggregateGenerator {
         return entries;
     }
 
-    async _aggregateRelations(mongoModel, oldName = "") {
+    async _aggregateRelations(mongoModel, projects, oldName = "") {
         const entries = [];
         const relations = this.mongoD.__relations[mongoModel.modelName];
     
@@ -98,11 +98,12 @@ export class AggregateGenerator {
                 ];
             }
 
+            projects.add(collectionName);
             entries.push(...entry);
 
             const modelRelations = this.mongoD.__relations[modelName];
             if (modelRelations) {
-                const modelRelationsEntries = await this._aggregateRelations(model, collectionName);
+                const modelRelationsEntries = await this._aggregateRelations(model, projects, collectionName);
                 entries.push(...modelRelationsEntries);
             }
         }
@@ -115,7 +116,19 @@ export class AggregateGenerator {
     }
 
     async _makeRelationsAggregate() {
-        this.relationsToAggregate = await this._aggregateRelations(this.mongoModel);
+        const projects = new Set([]);
+
+        const relations = await this._aggregateRelations(this.mongoModel, projects);
+
+        const toProjects = {
+            $project: Object.fromEntries(
+              Array.from(projects).map((pj) => [pj, 0]) // Mapeia os campos para exclusão
+            ),
+        };
+
+        relations.push(toProjects);
+
+        this.relationsToAggregate = relations;
     }
 
     async makeAggretions() {

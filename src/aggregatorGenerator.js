@@ -132,10 +132,15 @@ export class AggregateGenerator {
     
         for (const [modelName, values] of Object.entries(relations)) {
             const model = this.mongoD.__models[modelName];
-            if (!model) return;
+            if (!model && !stop) break;
 
-            const collectionName = model.collection.name;
             let entry;
+            const collectionName = model.collection.name;
+
+            if (options.stop.collection === collectionName) {
+                if (options.stop.bruteForce) stop = true;
+                break;
+            }
 
             if (values.length === 1) {
                 entry = this._normalRelation(
@@ -163,7 +168,7 @@ export class AggregateGenerator {
                     options,
                     collectionName
                 );
-                
+
                 entries.push(...modelRelationsEntries);
             }
         }

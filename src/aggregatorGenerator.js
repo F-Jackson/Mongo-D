@@ -196,7 +196,14 @@ export class AggregateGenerator {
             ),
         };
 
+        const toAddFields = {
+            "$addFields": {
+                "$relatedTo": addFields,
+            }
+        }
+
         relations.push(toProjects);
+        relations.push(toAddFields);
 
         this.relationsToAggregate = relations;
     }

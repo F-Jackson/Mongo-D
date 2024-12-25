@@ -11,6 +11,7 @@ class Schema {
         const mongoSchema = class extends mongoose.Schema {};
 
         const properties = {};
+        const fields = new Set([]);
         const originalPath = mongoSchema.prototype.path;
 
         mongoSchema.prototype.path = function (path, obj) {
@@ -18,12 +19,14 @@ class Schema {
                 return originalPath.call(this, path);
             }
 
+            fields.add(path);
             properties[path] = obj;
             return originalPath.call(this, path, obj);
         };
 
         const schema = new mongoSchema(obj, options);
         schema.__properties = properties;
+        schema.__fields = fields;
 
         return schema;
     }

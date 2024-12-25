@@ -173,7 +173,7 @@ export class AggregateGenerator {
 
         const toProjects = {
             $project: Object.fromEntries(
-              Array.from(projects).map((pj) => [pj, 0]) // Mapeia os campos para exclusão
+                Array.from(projects).map((pj) => [pj, 0])
             ),
         };
 

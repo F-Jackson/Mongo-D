@@ -105,7 +105,7 @@ export class AggregateGenerator {
             {
                 $lookup: {
                     from: collectionName,
-                    let: { [`${oldName}_id`]: `${oldName}${oldName ? "." : ""}_id` },
+                    let: { [`${oldName}_id`]: `$${oldName}${oldName ? "." : ""}_id` },
                     pipeline: [
                         {
                             $match: {
@@ -213,8 +213,8 @@ export class AggregateGenerator {
             }
         }
 
-        relations.push(toProjects);
         relations.push(toAddFields);
+        relations.push(toProjects);
 
         this.relationsToAggregate = relations;
     }

@@ -6,72 +6,81 @@ export class GenerateFoward {
         this.maxDeep = maxDeep;
     }
 
-    async _aggregate(mongoModel, alreadyFound) {
+    _shouldSkipModel(relatedModelName, alreadyVisited) {
+        const relatedModel = this.mongoD.__models[relatedModelName];
+        if (!relatedModel || alreadyVisited.includes(relatedModelName)) return true;
+
+        const collectionName = relatedModel.collection.name;
+        if (this.options.stop.collection === collectionName) {
+            if (this.options.stop.bruteForce) this.stop = true;
+            return true;
+        }
+
+        return this.stop;
+    }
+
+    _createLookupStage(collectionName, path) {
+        return {
+            $lookup: {
+                from: collectionName,
+                localField: path,
+                foreignField: "_id",
+                as: path
+            }
+        };
+    }
+
+    _createUnwindStage(path) {
+        return {
+            $unwind: `$${path}`
+        };
+    }
+
+    async _aggregate(mongoModel, alreadyVisited) {
         if (!mongoModel._FKS) return [];
 
-        const entries = [];
+        const pipeline = [];
         this.maxDeep--;
 
         if (this.maxDeep < 0) throw new Error("Exceded max deep");
-        const modelEntries = Object.entries(mongoModel._FKS);
 
-        for (let i = 0; i < modelEntries.length; i++) {
-            const [modelName, values] = modelEntries[i];
-            const model = this.mongoD.__models[modelName];
-            if (!model && !this.stop) break;
+        for (const [relatedModelName, keys] of Object.entries(mongoModel._FKS)) {
+            if (this._shouldSkipModel(relatedModelName, alreadyVisited)) continue;
 
-            const collectionName = model.collection.name;
+            const relatedModel = this.mongoD.__models[relatedModelName];
+            const collectionName = relatedModel.collection.name;
 
             if (this.options.stop.collection === collectionName) {
                 if (this.options.stop.bruteForce) this.stop = true;
                 break;
             }
 
-            let alreadyEntries;
+            for (const key of keys) {
+                const path = key.path.join(".");
 
-            if (i === 0) {
-                alreadyEntries = alreadyFound;
-            } else {
-                alreadyEntries = [...alreadyFound];
-            }
-
-            if (alreadyEntries.includes(modelName)) break;
-            alreadyEntries.push(modelName);
-
-            for (const value of values) {
-                const path = value.path.join(".");
+                const lookupStage = this._createLookupStage(collectionName, path);
+                const unwindStage = this._createUnwindStage(path);
     
-                const entry = [
-                    {
-                        $lookup: {
-                            from: collectionName,
-                            localField: path,
-                            foreignField: "_id",
-                            as: path
-                        }
-                    },
-                    {
-                        $unwind: `$${path}`
-                    }
-                ];
-    
-                if (model._FKS) {
-                    const nestedEntries = await this._aggregate(model, alreadyEntries);
-                    if (nestedEntries.length > 0) {
-                        entry[0]["$lookup"].pipeline = nestedEntries;
+                if (mongoModel._FKS) {
+                    const nestedPipeline = await this._aggregate(
+                        relatedModel,
+                        [...alreadyVisited, relatedModelName]
+                    );
+                    if (nestedPipeline.length > 0) {
+                        lookupStage.$lookup.pipeline = nestedPipeline;
                     }
                 }
     
-                entries.push(...entry);
+                pipeline.push(lookupStage, unwindStage);
             }
         }
     
-        return entries;
+        return pipeline;
     }
 
     async makeAggregate(mongoModel) {
-        const alreadyFound = [];
+        const alreadyVisited = [];
 
-        return await this._aggregate(mongoModel, alreadyFound);
+        return await this._aggregate(mongoModel, alreadyVisited);
     }
 }

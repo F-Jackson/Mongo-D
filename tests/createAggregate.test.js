@@ -398,6 +398,8 @@ describe("Aggregate Foward", () => {
         }}, client);
         const pipeline = await generator.makeAggregate(TestModel);
 
+        console.log(util.inspect(pipeline, { showHidden: false, depth: null, colors: true }));
+
         expect(pipeline).toMatchObject([
             {
                 $lookup: {

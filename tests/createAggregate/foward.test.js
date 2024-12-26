@@ -1295,9 +1295,9 @@ describe("Aggregate Foward", () => {
     it("should create pipeline deep 4 with diferrents fields away recursive", async () => {
         const relatedSchema4 = new Schema(mongoose, {
             name: { type: String, required: true },
-            r2: {
+            r: {
                 type: mongoose.Schema.Types.ObjectId,
-                ref: "RelatedModel2",
+                ref: "RelatedModel",
                 required: true,
             },
         });

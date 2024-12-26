@@ -1533,4 +1533,135 @@ describe("Aggregate Foward", () => {
             },
         ]);
     });
+
+    it("should create pipeline deep 4 should stop without brute force", async () => {
+        const relatedSchema4 = new Schema(mongoose, {
+            name: { type: String, required: true },
+        });
+        const relatedSchema3 = new Schema(mongoose, {
+            name: { type: String, required: true },
+            related4: {
+                type: mongoose.Schema.Types.ObjectId,
+                ref: "RelatedModel4",
+                required: true,
+            },
+        });
+        const relatedSchema2 = new Schema(mongoose, {
+            name: { type: String, required: true },
+            related3: {
+                type: mongoose.Schema.Types.ObjectId,
+                ref: "RelatedModel3",
+                required: true,
+            },
+            related4: {
+                type: mongoose.Schema.Types.ObjectId,
+                ref: "RelatedModel4",
+                required: true,
+            },
+        });
+        const relatedSchema = new Schema(mongoose, {
+            name: { type: String, required: true },
+            related2: {
+                type: mongoose.Schema.Types.ObjectId,
+                ref: "RelatedModel2",
+                required: true,
+            },
+        });
+        const testSchema = new Schema(mongoose, {
+            name: { type: String, required: true },
+            related: {
+                type: mongoose.Schema.Types.ObjectId,
+                ref: "RelatedModel",
+                required: true,
+            },
+        });
+
+        const RelatedModel4 = Model(mongoose, "RelatedModel4", relatedSchema4);
+        const RelatedModel3 = Model(mongoose, "RelatedModel3", relatedSchema3);
+        const RelatedModel2 = Model(mongoose, "RelatedModel2", relatedSchema2);
+        const RelatedModel = Model(mongoose, "RelatedModel", relatedSchema);
+        const TestModel = Model(mongoose, "TestModel", testSchema);
+
+        await InitModels(client);
+
+        const generator = new GenerateFoward({ stop: {
+            collection: "RelatedModel4",
+            bruteForce: false
+        }}, client);
+        const pipeline = await generator.makeAggregate(TestModel);
+
+        expect(pipeline).toMatchObject([
+            {
+                $lookup: {
+                    from: "relatedmodels",
+                    localField: "related",
+                    foreignField: "_id",
+                    as: "related",
+                    pipeline: [
+                        {
+                            $lookup: {
+                                from: "relatedmodel2",
+                                localField: "related2",
+                                foreignField: "_id",
+                                as: "related2",
+                                pipeline: [
+                                    {
+                                        $lookup: {
+                                            from: "relatedmodel3",
+                                            localField: "related3",
+                                            foreignField: "_id",
+                                            as: "related3",
+                                        },
+                                    },
+                                    { $unwind: "$related3" },
+                                ]
+                            },
+                        },
+                        { $unwind: "$related2" },
+                    ]
+                },
+            },
+            { $unwind: "$related" },
+        ]);
+
+        /*const r2 = await RelatedModel2.create({ name: "Related2" });
+        const r = await RelatedModel.create({ name: "Related", related2: r2 });
+        const t = await TestModel.create({ name: "Test", related: r });
+        const t2 = await TestModel.create({ name: "Test2", related: r });
+
+        const aggregated = await TestModel.aggregate(pipeline);
+
+        expect(aggregated).toMatchObject([
+            {
+                _id: t._id,
+                __v: t.__v,
+                name: 'Test',
+                related: {
+                    _id: r._id,
+                    __v: r.__v,
+                    name: "Related",
+                    related2: {
+                        _id: r2._id,
+                        __v: r2.__v,
+                        name: "Related2"
+                    }
+                }
+            },
+            {
+                _id: t2._id,
+                __v: t2.__v,
+                name: 'Test2',
+                related: {
+                    _id: r._id,
+                    __v: r.__v,
+                    name: "Related",
+                    related2: {
+                        _id: r2._id,
+                        __v: r2.__v,
+                        name: "Related2"
+                    }
+                }
+            },
+        ]);*/
+    });
 });

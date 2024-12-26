@@ -775,6 +775,41 @@ describe("Aggregate Foward", () => {
                     }
                 }
             },
+            {
+                _id: t2._id,
+                __v: t2.__v,
+                name: 'Test2',
+                related: {
+                    _id: r._id,
+                    __v: r.__v,
+                    name: "Related",
+                    rr2: {
+                        _id: r2._id,
+                        __v: r2.__v,
+                        name: "Related2",
+                        r4: {
+                            _id: r4._id,
+                            __v: r4.__v,
+                            name: "Related4",
+                        }
+                    }, 
+                    rr3: {
+                        _id: r3._id,
+                        __v: r3.__v,
+                        name: "Related3",
+                    }
+                },
+                related2: {
+                    _id: rb2._id,
+                    __v: rb2.__v,
+                    name: "Related2B",
+                    r4: {
+                        _id: rb4._id,
+                        __v: rb4.__v,
+                        name: "Related4B",
+                    }
+                }
+            }
         ]);
     });
 

@@ -638,7 +638,7 @@ describe("Aggregate Foward", () => {
             },
         });
         const testSchema = new Schema(mongoose, {
-            title: { type: String, required: true },
+            name: { type: String, required: true },
             related: {
                 type: mongoose.Schema.Types.ObjectId,
                 ref: "RelatedModel",

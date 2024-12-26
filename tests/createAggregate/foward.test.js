@@ -54,19 +54,32 @@ describe("Aggregate Foward", () => {
 
         const r = await RelatedModel.create({ name: "Related" });
         const t = await TestModel.create({ name: "Test", related: r });
+        const t2 = await TestModel.create({ name: "Test2", related: r });
 
         const aggregated = await TestModel.aggregate(pipeline);
 
-        expect(aggregated[0]).toMatchObject({
-            _id: t._id,
-            __v: t.__v,
-            name: 'Test',
-            related: {
-                _id: r._id,
-                __v: r.__v,
-                name: "Related",
+        expect(aggregated).toMatchObject([
+            {
+                _id: t._id,
+                __v: t.__v,
+                name: 'Test',
+                related: {
+                    _id: r._id,
+                    __v: r.__v,
+                    name: "Related",
+                }
+            },
+            {
+                _id: t2._id,
+                __v: t2.__v,
+                name: 'Test2',
+                related: {
+                    _id: r._id,
+                    __v: r.__v,
+                    name: "Related",
+                }
             }
-        });
+        ]);
     });
 
     it("should create pipeline deep 2", async () => {
@@ -127,24 +140,42 @@ describe("Aggregate Foward", () => {
         const r2 = await RelatedModel2.create({ name: "Related2" });
         const r = await RelatedModel.create({ name: "Related", related2: r2 });
         const t = await TestModel.create({ name: "Test", related: r });
+        const t2 = await TestModel.create({ name: "Test2", related: r });
 
         const aggregated = await TestModel.aggregate(pipeline);
 
-        expect(aggregated[0]).toMatchObject({
-            _id: t._id,
-            __v: t.__v,
-            name: 'Test',
-            related: {
-                _id: r._id,
-                __v: r.__v,
-                name: "Related",
-                related2: {
-                    _id: r2._id,
-                    __v: r2.__v,
-                    name: "Related2"
+        expect(aggregated).toMatchObject([
+            {
+                _id: t._id,
+                __v: t.__v,
+                name: 'Test',
+                related: {
+                    _id: r._id,
+                    __v: r.__v,
+                    name: "Related",
+                    related2: {
+                        _id: r2._id,
+                        __v: r2.__v,
+                        name: "Related2"
+                    }
                 }
-            }
-        });
+            },
+            {
+                _id: t2._id,
+                __v: t2.__v,
+                name: 'Test2',
+                related: {
+                    _id: r._id,
+                    __v: r.__v,
+                    name: "Related",
+                    related2: {
+                        _id: r2._id,
+                        __v: r2.__v,
+                        name: "Related2"
+                    }
+                }
+            },
+        ]);
     });
 
     it("should create pipeline deep 1 triple", async () => {

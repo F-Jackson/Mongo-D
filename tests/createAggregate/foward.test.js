@@ -1101,8 +1101,7 @@ describe("Aggregate Foward", () => {
         const t = await TestModel.create({ name: "Test", related: rr, related2: rr2, related3: rr3 });
         const t2 = await TestModel.create({ name: "Test2", related: rr2, related2: rr3, related3: rr });
 
-        const aggregated = await TestModel.aggregate(pipeline);
-        //console.log(util.inspect(aggregated, { showHidden: false, depth: null, colors: true }));    
+        const aggregated = await TestModel.aggregate(pipeline);   
 
         expect(aggregated).toMatchObject([
             {
@@ -1298,7 +1297,6 @@ describe("Aggregate Foward", () => {
             r: {
                 type: mongoose.Schema.Types.ObjectId,
                 ref: "RelatedModel",
-                required: true,
             },
         });
         const relatedSchema3 = new Schema(mongoose, {
@@ -1314,19 +1312,19 @@ describe("Aggregate Foward", () => {
         });
         const relatedSchema = new Schema(mongoose, {
             name: { type: String, required: true },
-            rr2: {
+            r2: {
                 type: mongoose.Schema.Types.ObjectId,
                 ref: "RelatedModel2",
                 required: true,
             },
-            rr3: {
+            r3: {
                 type: mongoose.Schema.Types.ObjectId,
                 ref: "RelatedModel3",
                 required: true,
             },
         });
         const testSchema = new Schema(mongoose, {
-            title: { type: String, required: true },
+            name: { type: String, required: true },
             related: {
                 type: mongoose.Schema.Types.ObjectId,
                 ref: "RelatedModel",
@@ -1339,10 +1337,10 @@ describe("Aggregate Foward", () => {
             },
         });
 
-        Model(mongoose, "RelatedModel4", relatedSchema4);
-        Model(mongoose, "RelatedModel3", relatedSchema3);
-        Model(mongoose, "RelatedModel2", relatedSchema2);
-        Model(mongoose, "RelatedModel", relatedSchema);
+        const RelatedModel4 = Model(mongoose, "RelatedModel4", relatedSchema4);
+        const RelatedModel3 = Model(mongoose, "RelatedModel3", relatedSchema3);
+        const RelatedModel2 = Model(mongoose, "RelatedModel2", relatedSchema2);
+        const RelatedModel = Model(mongoose, "RelatedModel", relatedSchema);
         const TestModel = Model(mongoose, "TestModel", testSchema);
         await InitModels(client);
 
@@ -1413,6 +1411,46 @@ describe("Aggregate Foward", () => {
                 },
             },
             { $unwind: "$related2" },
+        ]);
+
+        const rd = await RelatedModel4.create({ name: "RelatedD" });
+        const rd2 = await RelatedModel4.create({ name: "RelatedD2" });
+        const rd3 = await RelatedModel4.create({ name: "RelatedD3" });
+
+        const rc = await RelatedModel3.create({ name: "RelatedC" });
+        const rc2 = await RelatedModel3.create({ name: "RelatedC2" });
+        const rc3 = await RelatedModel3.create({ name: "RelatedC3" });
+
+        const rb = await RelatedModel2.create({ name: "RelatedB", r4: rd });
+        const rb2 = await RelatedModel2.create({ name: "RelatedB2", r4: rd2 });
+        const rb3 = await RelatedModel2.create({ name: "RelatedB3", r4: rd3 });
+
+        const r = await RelatedModel.create({ name: "Related", r2: rb, r3: rc });
+        const r2 = await RelatedModel.create({ name: "Related2", r2: rb2, r3: rc2 });
+        const r3 = await RelatedModel.create({ name: "Related3", r2: rb3, r3: rc3 });
+
+        rd.r = r;
+        await rd.save();
+
+        rd2.r = r2;
+        await rd2.save();
+
+        rd3.r = r3;
+        await rd3.save();
+
+        const t = await TestModel.create({ name: "Test", related: r, related2: rb });
+        const t2 = await TestModel.create({ name: "Test2", related: r2, related2: rb2 });
+
+        const aggregated = await TestModel.aggregate(pipeline);   
+        console.log(aggregated)
+
+        expect(aggregated).toMatchObject([
+            {
+                _id: t._id,
+                __v: t.__v,
+                name: 'Test',
+                
+            },
         ]);
     });
 });

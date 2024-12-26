@@ -51,6 +51,22 @@ describe("Aggregate Foward", () => {
             },
             { $unwind: "$related" },
         ]);
+
+        const r = await RelatedModel.create({ name: "Test" });
+        const t = await TestModel.create({ name: "Related", related: r });
+
+        const aggregated = await TestModel.aggregate(pipeline);
+
+        expect(aggregated).toMatchObject({
+            _id: t._id,
+            __v: t.__v,
+            name: 'Test',
+            related: {
+                _id: r._id,
+                __v: r.__v,
+                name: "Related",
+            }
+        });
     });
 
     it("should create pipeline deep 2", async () => {

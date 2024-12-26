@@ -183,7 +183,7 @@ describe("Aggregate Foward", () => {
             name: { type: String, required: true },
         });
         const testSchema = new Schema(mongoose, {
-            title: { type: String, required: true },
+            name: { type: String, required: true },
             related: {
                 type: mongoose.Schema.Types.ObjectId,
                 ref: "RelatedModel",
@@ -239,6 +239,57 @@ describe("Aggregate Foward", () => {
                 },
             },
             { $unwind: "$related3" },
+        ]);
+
+        const r = await RelatedModel.create({ name: "Related" });
+        const r2 = await RelatedModel.create({ name: "Related2" });
+        const r3 = await RelatedModel.create({ name: "Related3" });
+        const t = await TestModel.create({ name: "Test", related: r, related2: r2, related3: r3 });
+        const t2 = await TestModel.create({ name: "Test2", related: r3, related2: r, related3: r2 });
+
+        const aggregated = await TestModel.aggregate(pipeline);
+
+        expect(aggregated).toMatchObject([
+            {
+                _id: t._id,
+                __v: t.__v,
+                name: 'Test',
+                related: {
+                    _id: r._id,
+                    __v: r.__v,
+                    name: "Related"
+                },
+                related2: {
+                    _id: r2._id,
+                    __v: r2.__v,
+                    name: "Related2"
+                },
+                related3: {
+                    _id: r3._id,
+                    __v: r3.__v,
+                    name: "Related3"
+                },
+            },
+            {
+                _id: t2._id,
+                __v: t2.__v,
+                name: 'Test2',
+                related: {
+                    _id: r3._id,
+                    __v: r3.__v,
+                    name: "Related3"
+                },
+                related2: {
+                    _id: r._id,
+                    __v: r.__v,
+                    name: "Related"
+                },
+                related3: {
+                    _id: r2._id,
+                    __v: r2.__v,
+                    name: "Related2"
+                },
+            },
         ]);
     });
 

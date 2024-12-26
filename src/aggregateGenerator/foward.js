@@ -6,7 +6,7 @@ export class GenerateFoward {
         this.maxDeep = maxDeep;
     }
 
-    async _aggregate(mongoModel) {
+    async _aggregate(mongoModel, alreadyFound) {
         if (!mongoModel._FKS) return [];
 
         const entries = [];
@@ -24,6 +24,10 @@ export class GenerateFoward {
                 if (this.options.stop.bruteForce) this.stop = true;
                 break;
             }
+
+            if (!alreadyFound) alreadyFound = [];
+            if (alreadyFound.includes(modelName)) break;
+            alreadyFound.push(modelName);
 
             for (const value of values) {
                 const path = value.path.join(".");
@@ -43,7 +47,7 @@ export class GenerateFoward {
                 ];
     
                 if (model._FKS) {
-                    const nestedEntries = await this._aggregate(model);
+                    const nestedEntries = await this._aggregate(model, alreadyFound);
                     if (nestedEntries.length > 0) {
                         entry[0]["$lookup"].pipeline = nestedEntries;
                     }

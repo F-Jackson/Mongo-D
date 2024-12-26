@@ -461,4 +461,45 @@ describe("Aggregate Foward", () => {
             { $unwind: "$related2" },
         ]);
     });
+
+    it("should create pipeline deep 1 recursive", async () => {
+        const relatedSchema = new Schema(mongoose, {
+            name: { type: String, required: true },
+            related2: {
+                type: mongoose.Schema.Types.ObjectId,
+                ref: "RelatedModel2",
+                required: true,
+            },
+        });
+        const relatedSchema2 = new Schema(mongoose, {
+            title: { type: String, required: true },
+            related: {
+                type: mongoose.Schema.Types.ObjectId,
+                ref: "RelatedModel",
+                required: true,
+            },
+        });
+
+        const RelatedModel = Model(mongoose, "RelatedModel", relatedSchema);
+        const RelatedModel2 = Model(mongoose, "RelatedModel2", relatedSchema2);
+        await InitModels(client);
+
+        const generator = new GenerateFoward({ stop: {
+            collection: "",
+            bruteForce: false
+        }}, client);
+        const pipeline = await generator.makeAggregate(RelatedModel);
+
+        expect(pipeline).toMatchObject([
+            {
+                $lookup: {
+                    from: "relatedmodel2",
+                    localField: "related2",
+                    foreignField: "_id",
+                    as: "related2",
+                },
+            },
+            { $unwind: "$related2" },
+        ]);
+    });
 });

@@ -1,8 +1,7 @@
 import { describe, it, beforeEach, expect } from "vitest";
-import mongoose, { mongo } from "mongoose";
+import mongoose from "mongoose";
 import { cleanDb, disconnectDb } from "./utils.js";
 import { InitModels, Model, Schema } from "../src/index.js";
-import { aggregate, getLastsRelations } from "../src/deletion.js";
 
 
 describe("Mongo model creation", () => {
@@ -51,108 +50,6 @@ describe("Mongo model creation", () => {
             ]
         });
     });
-
-    /*it("should process paths in schema", async () => {
-        const related3 = new Schema(mongoose, {
-            title: String
-        });
-
-        const related2 = new Schema(mongoose, {
-            title: String,
-            related3: {
-                type: mongoose.Schema.Types.ObjectId,
-                ref: "RelatedModel3",
-                unique: true,
-                immutable: true
-            }
-        });
-
-        const related = new Schema(mongoose, {
-            title: String,
-            related2: {
-                type: mongoose.Schema.Types.ObjectId,
-                ref: "RelatedModel2",
-                unique: true,
-                immutable: true
-            },
-            rr: {
-                type: mongoose.Schema.Types.ObjectId,
-                ref: "RelatedModel2",
-                unique: true,
-                immutable: true
-            }
-        });
-
-        const nestedSchema = new Schema(mongoose, {
-            nestedField: {
-                subField: {
-                    type: mongoose.Schema.Types.ObjectId,
-                    ref: "RelatedModel",
-                    required: true,
-                    unique: true,
-                    immutable: true
-                },
-                po: String,
-                ll: {
-                    io: String,
-                    h: String
-                }
-            },
-            nestedField2: {
-                po2: {
-                    subField: {
-                        type: [mongoose.Schema.Types.ObjectId],
-                        ref: "RelatedModel",
-                    },
-                    arrayTest: [{ type: mongoose.Schema.Types.ObjectId, ref: "RelatedModel" }]
-                }
-            },
-            lo: [String]
-        });
-
-        const TSchema = new Schema(mongoose, {
-            title: String,
-            n: {
-                type: mongoose.Schema.Types.ObjectId,
-                ref: "NestedModel",
-                unique: true,
-                immutable: true
-            }
-        });
-
-        const ASchema = new Schema(mongoose, {
-            title: String,
-            a: {
-                type: mongoose.Schema.Types.ObjectId,
-                ref: "TModel",
-                unique: true,
-                immutable: true
-            }
-        });
-
-        const R3 = Model(mongoose, "RelatedModel3", related3);
-        const R2 = Model(mongoose, "RelatedModel2", related2);
-        const R = Model(mongoose, "RelatedModel", related);
-        const NestedModel = Model(mongoose, "NestedModel", nestedSchema);
-        const T = Model(mongoose, "TModel", TSchema);
-        const A = Model(mongoose, "AModel", ASchema);
-
-        await InitModels(client);
-
-        const rM3 = await R3.create({title: "OOOOO"});
-        const rM2 = await R2.create({title: "KKKK", related3: rM3 });
-        const rM = await R.create({title: "test", related2: rM2, rr: rM2 });
-        const n = await NestedModel.create({["nestedField.subField"]: rM, ["nestedField2.po2.subField"]: rM});
-        const t = await T.create({n: n._id});
-
-        //console.log(JSON.stringify(c));
-        const ff = await getLastsRelations(NestedModel);
-
-        const c = await NestedModel.find({}).populate(ff);
-
-        console.log(JSON.stringify(c));
-        await aggregate(rM._id, R, as, com);
-    }, 0);*/
 
     it("should throw error if model with same name exists", async () => {
         const TestModel = Model(mongoose, "TestModel", testSchema);

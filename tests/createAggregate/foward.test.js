@@ -82,7 +82,7 @@ describe("Aggregate Foward", () => {
             },
         });
         const testSchema = new Schema(mongoose, {
-            title: { type: String, required: true },
+            name: { type: String, required: true },
             related: {
                 type: mongoose.Schema.Types.ObjectId,
                 ref: "RelatedModel",
@@ -90,8 +90,8 @@ describe("Aggregate Foward", () => {
             },
         });
 
-        Model(mongoose, "RelatedModel2", relatedSchema2);
-        Model(mongoose, "RelatedModel", relatedSchema);
+        const RelatedModel2 = Model(mongoose, "RelatedModel2", relatedSchema2);
+        const RelatedModel = Model(mongoose, "RelatedModel", relatedSchema);
         const TestModel = Model(mongoose, "TestModel", testSchema);
         await InitModels(client);
 
@@ -123,6 +123,28 @@ describe("Aggregate Foward", () => {
             },
             { $unwind: "$related" },
         ]);
+
+        const r2 = await RelatedModel2.create({ name: "Related2" });
+        const r = await RelatedModel.create({ name: "Related", related2: r2 });
+        const t = await TestModel.create({ name: "Test", related: r });
+
+        const aggregated = await TestModel.aggregate(pipeline);
+
+        expect(aggregated[0]).toMatchObject({
+            _id: t._id,
+            __v: t.__v,
+            name: 'Test',
+            related: {
+                _id: r._id,
+                __v: r.__v,
+                name: "Related",
+                related2: {
+                    _id: r2._id,
+                    __v: r2.__v,
+                    name: "Related2"
+                }
+            }
+        });
     });
 
     it("should create pipeline deep 1 triple", async () => {

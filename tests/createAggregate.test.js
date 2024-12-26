@@ -1,5 +1,5 @@
 import { describe, it, beforeEach, expect } from "vitest";
-import mongoose from "mongoose";
+import mongoose, { Collection } from "mongoose";
 import { cleanDb, disconnectDb } from "./utils.js";
 import { InitModels, Model, Schema } from "../src/index.js";
 import { GenerateFoward } from "../src/aggregateGenerator/foward.js";
@@ -33,7 +33,10 @@ describe("Aggregate Foward", () => {
         const TestModel = Model(mongoose, "TestModel", testSchema);
         await InitModels(client);
 
-        const generator = new GenerateFoward({}, client);
+        const generator = new GenerateFoward({ stop: {
+            collection: "",
+            bruteForce: false
+        }}, client);
         const pipeline = await generator.makeAggregate(TestModel);
 
         expect(pipeline).toMatchObject([

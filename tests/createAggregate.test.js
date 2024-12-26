@@ -17,17 +17,17 @@ describe("Aggregate Foward", () => {
     });
 
     it("should create pipeline deep 1", async () => {
-        const testSchema = new Schema(mongoose, {
-            title: { type: String, required: true },
-        });
         const relatedSchema = new Schema(mongoose, {
             name: { type: String, required: true },
+        });
+        const testSchema = new Schema(mongoose, {
+            title: { type: String, required: true },
             related: {
                 type: mongoose.Schema.Types.ObjectId,
                 ref: "RelatedModel",
                 required: true,
             },
-        });;
+        });
 
         const RelatedModel = Model(mongoose, "RelatedModel", relatedSchema);
         const TestModel = Model(mongoose, "TestModel", testSchema);

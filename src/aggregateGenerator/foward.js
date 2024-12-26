@@ -7,6 +7,8 @@ export class GenerateFoward {
     }
 
     async _aggregate(mongoModel) {
+        if (!mongoModel._FKS) return [];
+
         const entries = [];
         this.maxDeep--;
 
@@ -41,7 +43,7 @@ export class GenerateFoward {
                 ];
     
                 if (model._FKS) {
-                    const nestedEntries = await this._aggregateFks(model);
+                    const nestedEntries = await this._aggregate(model);
                     if (nestedEntries.length > 0) {
                         entry[0]["$lookup"].pipeline = nestedEntries;
                     }
@@ -55,6 +57,6 @@ export class GenerateFoward {
     }
 
     async makeAggregate(mongoModel) {
-        return await this._aggregateFks(mongoModel);
+        return await this._aggregate(mongoModel);
     }
 }

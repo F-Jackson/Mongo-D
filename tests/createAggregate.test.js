@@ -48,7 +48,7 @@ describe("Aggregate Foward", () => {
                     as: "related",
                 },
             },
-            { $unwind: "$related" }, // Desaninha o array relatedmodel3
+            { $unwind: "$related" },
         ]);
     });
 });

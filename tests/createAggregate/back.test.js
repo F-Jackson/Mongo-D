@@ -1,12 +1,12 @@
 import { describe, it, beforeEach, expect } from "vitest";
 import mongoose from "mongoose";
-import { cleanDb, disconnectDb } from "./utils.js";
-import { InitModels, Model, Schema } from "../src/index.js";
-import { GenerateFoward } from "../src/aggregateGenerator/foward.js";
+import { cleanDb, disconnectDb } from "../utils.js";
+import { InitModels, Model, Schema } from "../../src/index.js";
+import { GenerateFoward } from "../../src/aggregateGenerator/foward.js";
 const util = require('util');
 
 
-describe("Aggregate Foward", () => {
+describe("Aggregate Back", () => {
     let client;
 
     beforeEach(async () => {

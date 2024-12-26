@@ -1,181 +1,171 @@
 export class GenerateBack {
-    constructor(options, mongoD) {
+    constructor(options, mongoD, maxDepth = 100) {
         this.options = options;
         this.mongoD = mongoD;
         this.stop = false;
-        this.maxDeep = maxDeep;
+        this.maxDepth = maxDepth;
     }
 
-    _fieldName(modelName) {
+    _generateFieldName(modelName) {
         return `_$_${modelName}`;
     }
 
-    _makeAddField(modelName, addFields) {
+    _createAddFieldEntry(modelName, addFields) {
+        const fieldName = this._generateFieldName(modelName);
         const newField = {
-            [this._fieldName(modelName)]: {
-                $mergeObjects: [
-                    `$${modelName}`
-                ],
-            }
-        }
-
+            [fieldName]: {
+                $mergeObjects: [`$${modelName}`],
+            },
+        };
         addFields.push(newField);
-        
-        return addFields[addFields.length - 1][this._fieldName(modelName)]["$mergeObjects"];
+        return newField[fieldName]["$mergeObjects"];
     }
 
-    _finishMakeAddField(modelName, collectionName, addFields) {
+    _finalizeAddFieldEntry(modelName, collectionName, addFields) {
+        const fieldName = this._generateFieldName(modelName);
         const newField = {
-            [this._fieldName(modelName)]: `${collectionName}`
-        }
-
+            [fieldName]: collectionName,
+        };
         addFields.push(newField);
     }
 
-    _makeSingle(collectionName, oldName, path) {
+    _createSingleLookup(collectionName, parentField, path) {
+        const fullPath = parentField ? `${parentField}._id` : "_id";
         return [
             {
                 $lookup: {
                     from: collectionName,
-                    localField: `${oldName}${oldName ? "." : ""}_id`,
+                    localField: fullPath,
                     foreignField: path.join("."),
                     as: collectionName,
-                }
+                },
             },
             {
-                $unwind: `$${collectionName}`
-            }
+                $unwind: `$${collectionName}`,
+            },
         ];
     }
 
-    _makeMulti(collectionName, oldName, values) {
+    _createMultiLookup(collectionName, parentField, values) {
+        const fullPath = parentField ? `${parentField}._id` : "_id";
         return [
             {
                 $lookup: {
                     from: collectionName,
-                    let: { [`${oldName}_id`]: `$${oldName}${oldName ? "." : ""}_id` },
+                    let: { [`${parentField}_id`]: `$${fullPath}` },
                     pipeline: [
                         {
                             $match: {
                                 $expr: {
-                                    $or: values.map(value => (
-                                        { $eq: [ `$${value.path.join(".")}`, `$$${oldName}_id`] }
-                                    )),
+                                    $or: values.map((value) => ({
+                                        $eq: [`$${value.path.join(".")}`, `$$${parentField}_id`],
+                                    })),
                                 },
                             },
                         },
                     ],
                     as: collectionName,
-                }
+                },
             },
             {
-                $unwind: `$${collectionName}`
-            }
-        ]
+                $unwind: `$${collectionName}`,
+            },
+        ];
     }
 
-    async _aggregate(
-        mongoModel, 
-        projects,
-        addFields,
-        oldName = ""
-    ) {
-        const entries = [];
-        this.maxDeep--;
+    async _processRelations(model, projectedFields, addFields, parentField = "") {
+        if (!this.mongoD.__relations[model.modelName]) return [];
+        if (this.maxDepth-- < 0) throw new Error("Exceeded maximum depth");
 
-        if (this.maxDeep < 0) throw new Error("Exceded max deep");
+        const pipeline = [];
+        const relations = this.mongoD.__relations[model.modelName];
 
-        const relations = this.mongoD.__relations[mongoModel.modelName];
-    
-        for (const [modelName, values] of Object.entries(relations)) {
-            const model = this.mongoD.__models[modelName];
-            if (!model && !this.stop) break;
+        for (const [relatedModelName, values] of Object.entries(relations)) {
+            const relatedModel = this.mongoD.__models[relatedModelName];
+            if (!relatedModel || this.stop) continue;
 
-            let entry;
-            const collectionName = model.collection.name;
+            const collectionName = relatedModel.collection.name;
+            if (this._shouldStopProcessing(collectionName)) break;
 
-            if (this.options.stop.collection === collectionName) {
-                if (this.options.stop.bruteForce) this.stop = true;
-                break;
-            }
-
+            let lookupStages;
             if (values.length === 1) {
-                entry = this._makeSingle(
+                lookupStages = this._createSingleLookup(
                     collectionName,
-                    oldName,
+                    parentField,
                     values[0].path
                 );
             } else {
-                entry = this._makeMulti(
+                lookupStages = this._createMultiLookup(
                     collectionName,
-                    oldName,
+                    parentField,
                     values
                 );
             }
 
-            const modelRelations = this.mongoD.__relations[modelName];
+            projectedFields.add(collectionName);
+            pipeline.push(...lookupStages);
 
-            projects.add(collectionName);
-            entries.push(...entry);
-            if (modelRelations) {
-                const toAdd = this._makeAddField(modelName, addFields);
-
-                const modelRelationsEntries = await this._aggregate(
-                    model, 
-                    projects,
-                    toAdd,
+            if (this.mongoD.__relations[relatedModelName]) {
+                const nestedFields = this._createAddFieldEntry(relatedModelName, addFields);
+                const nestedPipeline = await this._processRelations(
+                    relatedModel,
+                    projectedFields,
+                    nestedFields,
                     collectionName
                 );
-
-                entries.push(...modelRelationsEntries);
+                pipeline.push(...nestedPipeline);
             } else {
-                this._finishMakeAddField(modelName, collectionName, addFields);
+                this._finalizeAddFieldEntry(relatedModelName, collectionName, addFields);
             }
         }
 
-        return entries;
+        return pipeline;
     }
 
-    async makeAggregate(mongoModel) {
-        const projects = new Set([]);
+    _shouldStopProcessing(collectionName) {
+        if (this.options.stop.collection === collectionName) {
+            if (this.options.stop.bruteForce) this.stop = true;
+            return true;
+        }
+        return this.stop;
+    }
+
+    async generatePipeline(model) {
+        if (!model) throw new Error("A valid MongoDB model must be provided");
+
+        const projectedFields = new Set();
         const addFields = [];
 
-        const relations = await this._aggregate(
-            mongoModel, 
-            projects,
-            addFields,
+        const relationsPipeline = await this._processRelations(
+            model,
+            projectedFields,
+            addFields
         );
 
-        const toProjects = {
+        const projectionStage = {
             $project: Object.fromEntries(
-                Array.from(projects).map((pj) => [pj, 0])
+                Array.from(projectedFields).map((field) => [field, 0])
             ),
         };
 
-        const toAddFields = {
-            "$addFields": {
-                "__relatedTo__": addFields,
-            }
-        }
+        const addFieldsStage = {
+            $addFields: {
+                __relatedTo__: addFields,
+            },
+        };
 
-        const groupFields = [
+        const deduplicationStages = [
             {
-                '$group': {
-                    _id: '$_id', // Agrupando por _id para remover duplicados
-                    uniqueDocuments: { '$first': '$$ROOT' } // Mantendo um único documento por _id
-                }
+                $group: {
+                    _id: "$_id",
+                    uniqueDocument: { $first: "$$ROOT" },
+                },
             },
             {
-                '$replaceRoot': {
-                    newRoot: '$uniqueDocuments' // Retornando os documentos únicos
-                }
-            }
-        ]
+                $replaceRoot: { newRoot: "$uniqueDocument" },
+            },
+        ];
 
-        relations.push(toAddFields);
-        relations.push(toProjects);
-        relations.push(...groupFields);
-
-        return relations;
+        return [...relationsPipeline, addFieldsStage, projectionStage, ...deduplicationStages];
     }
 }

@@ -1361,9 +1361,9 @@ describe("Aggregate Foward", () => {
                         {
                             $lookup: {
                                 from: "relatedmodel2",
-                                localField: "rr2",
+                                localField: "r2",
                                 foreignField: "_id",
-                                as: "rr2",
+                                as: "r2",
                                 pipeline: [
                                     {
                                         $lookup: {
@@ -1377,16 +1377,16 @@ describe("Aggregate Foward", () => {
                                 ]
                             },
                         },
-                        { $unwind: "$rr2" },
+                        { $unwind: "$r2" },
                         {
                             $lookup: {
                                 from: "relatedmodel3",
-                                localField: "rr3",
+                                localField: "r3",
                                 foreignField: "_id",
-                                as: "rr3"
+                                as: "r3"
                             },
                         },
-                        { $unwind: "$rr3" },
+                        { $unwind: "$r3" },
                     ]
                 },
             },
@@ -1415,19 +1415,15 @@ describe("Aggregate Foward", () => {
 
         const rd = await RelatedModel4.create({ name: "RelatedD" });
         const rd2 = await RelatedModel4.create({ name: "RelatedD2" });
-        const rd3 = await RelatedModel4.create({ name: "RelatedD3" });
 
         const rc = await RelatedModel3.create({ name: "RelatedC" });
         const rc2 = await RelatedModel3.create({ name: "RelatedC2" });
-        const rc3 = await RelatedModel3.create({ name: "RelatedC3" });
 
         const rb = await RelatedModel2.create({ name: "RelatedB", r4: rd });
         const rb2 = await RelatedModel2.create({ name: "RelatedB2", r4: rd2 });
-        const rb3 = await RelatedModel2.create({ name: "RelatedB3", r4: rd3 });
 
         const r = await RelatedModel.create({ name: "Related", r2: rb, r3: rc });
         const r2 = await RelatedModel.create({ name: "Related2", r2: rb2, r3: rc2 });
-        const r3 = await RelatedModel.create({ name: "Related3", r2: rb3, r3: rc3 });
 
         rd.r = r;
         await rd.save();
@@ -1435,21 +1431,105 @@ describe("Aggregate Foward", () => {
         rd2.r = r2;
         await rd2.save();
 
-        rd3.r = r3;
-        await rd3.save();
-
         const t = await TestModel.create({ name: "Test", related: r, related2: rb });
         const t2 = await TestModel.create({ name: "Test2", related: r2, related2: rb2 });
 
-        const aggregated = await TestModel.aggregate(pipeline);   
-        console.log(aggregated)
+        const aggregated = await TestModel.aggregate(pipeline);
 
         expect(aggregated).toMatchObject([
             {
                 _id: t._id,
                 __v: t.__v,
                 name: 'Test',
-                
+                related: {
+                    _id: r._id,
+                    __v: r.__v,
+                    name: 'Related',
+                    r2: {
+                        _id: rb._id,
+                        __v: rb.__v,
+                        name: 'RelatedB',
+                        r4: {
+                            _id: rd._id,
+                            __v: rd.__v,
+                            name: 'RelatedD',
+                            r: r._id
+                        }
+                    },
+                    r3: {
+                        _id: rc._id,
+                        __v: rc.__v,
+                        name: 'RelatedC',
+                    }
+                },
+                related2: {
+                    _id: rb._id,
+                    __v: rb.__v,
+                    name: 'RelatedB',
+                    r4: {
+                        _id: rd._id,
+                        __v: rd.__v,
+                        name: 'RelatedD',
+                        r: {
+                            _id: r._id,
+                            __v: r.__v,
+                            name: 'Related',
+                            r2: rb._id,
+                            r3: {
+                                _id: rc._id,
+                                __v: rc.__v,
+                                name: 'RelatedC',
+                            }
+                        }
+                    }
+                }
+            },
+            {
+                _id: t2._id,
+                __v: t2.__v,
+                name: 'Test2',
+                related: {
+                    _id: r2._id,
+                    __v: r2.__v,
+                    name: 'Related2',
+                    r2: {
+                        _id: rb2._id,
+                        __v: rb2.__v,
+                        name: 'RelatedB2',
+                        r4: {
+                            _id: rd2._id,
+                            __v: rd2.__v,
+                            name: 'RelatedD2',
+                            r: r2._id
+                        }
+                    },
+                    r3: {
+                        _id: rc2._id,
+                        __v: rc2.__v,
+                        name: 'RelatedC2',
+                    }
+                },
+                related2: {
+                    _id: rb2._id,
+                    __v: rb2.__v,
+                    name: 'RelatedB2',
+                    r4: {
+                        _id: rd2._id,
+                        __v: rd2.__v,
+                        name: 'RelatedD2',
+                        r: {
+                            _id: r2._id,
+                            __v: r2.__v,
+                            name: 'Related2',
+                            r2: rb2._id,
+                            r3: {
+                                _id: rc2._id,
+                                __v: rc2.__v,
+                                name: 'RelatedC2',
+                            }
+                        }
+                    }
+                }
             },
         ]);
     });

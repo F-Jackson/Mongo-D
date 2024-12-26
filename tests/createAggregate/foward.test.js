@@ -651,10 +651,10 @@ describe("Aggregate Foward", () => {
             },
         });
 
-        Model(mongoose, "RelatedModel4", relatedSchema4);
-        Model(mongoose, "RelatedModel3", relatedSchema3);
-        Model(mongoose, "RelatedModel2", relatedSchema2);
-        Model(mongoose, "RelatedModel", relatedSchema);
+        const RelatedModel4 = Model(mongoose, "RelatedModel4", relatedSchema4);
+        const RelatedModel3 = Model(mongoose, "RelatedModel3", relatedSchema3);
+        const RelatedModel2 = Model(mongoose, "RelatedModel2", relatedSchema2);
+        const RelatedModel = Model(mongoose, "RelatedModel", relatedSchema);
         const TestModel = Model(mongoose, "TestModel", testSchema);
         await InitModels(client);
 
@@ -725,6 +725,56 @@ describe("Aggregate Foward", () => {
                 },
             },
             { $unwind: "$related2" },
+        ]);
+
+        const r4 = await RelatedModel4.create({ name: "Related4" });
+        const rb4 = await RelatedModel4.create({ name: "Related4B" });
+        const r3 = await RelatedModel3.create({ name: "Related3" });
+        const r2 = await RelatedModel2.create({ name: "Related2", r4: r4 });
+        const rb2 = await RelatedModel2.create({ name: "Related2B", r4: rb4 });
+        const r = await RelatedModel.create({ name: "Related", rr2: r2, rr3: r3 });
+
+        const t = await TestModel.create({ name: "Test", related: r, related2: r2});
+        const t2 = await TestModel.create({ name: "Test2", related: r, related2: rb2 });
+
+        const aggregated = await TestModel.aggregate(pipeline);
+
+        expect(aggregated).toMatchObject([
+            {
+                _id: t._id,
+                __v: t.__v,
+                name: 'Test',
+                related: {
+                    _id: r._id,
+                    __v: r.__v,
+                    name: "Related",
+                    rr2: {
+                        _id: r2._id,
+                        __v: r2.__v,
+                        name: "Related2",
+                        r4: {
+                            _id: r4._id,
+                            __v: r4.__v,
+                            name: "Related4",
+                        }
+                    }, 
+                    rr3: {
+                        _id: r3._id,
+                        __v: r3.__v,
+                        name: "Related3",
+                    }
+                },
+                related2: {
+                    _id: r2._id,
+                    __v: r2.__v,
+                    name: "Related2",
+                    r4: {
+                        _id: r4._id,
+                        __v: r4.__v,
+                        name: "Related4",
+                    }
+                }
+            },
         ]);
     });
 

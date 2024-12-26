@@ -3,6 +3,7 @@ export class GenerateBack {
         this.options = options;
         this.mongoD = mongoD;
         this.stop = false;
+        this.maxDeep = maxDeep;
     }
 
     _fieldName(modelName) {
@@ -80,6 +81,10 @@ export class GenerateBack {
         oldName = ""
     ) {
         const entries = [];
+        this.maxDeep--;
+
+        if (this.maxDeep < 0) throw new Error("Exceded max deep");
+
         const relations = this.mongoD.__relations[mongoModel.modelName];
     
         for (const [modelName, values] of Object.entries(relations)) {

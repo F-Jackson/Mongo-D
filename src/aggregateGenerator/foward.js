@@ -1,12 +1,16 @@
 export class GenerateFoward {
-    constructor(options, mongoD) {
+    constructor(options, mongoD, maxDeep = 100) {
         this.options = options;
         this.mongoD = mongoD;
         this.stop = false;
+        this.maxDeep = maxDeep;
     }
 
     async _aggregate(mongoModel) {
         const entries = [];
+        this.maxDeep--;
+
+        if (this.maxDeep < 0) throw new Error("Exceded max deep");
     
         for (const [modelName, values] of Object.entries(mongoModel._FKS)) {
             const model = this.mongoD.__models[modelName];

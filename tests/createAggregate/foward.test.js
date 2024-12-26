@@ -1098,31 +1098,36 @@ describe("Aggregate Foward", () => {
         r3.recursive3 = rr2;
         await r3.save();
 
-        const t = await TestModel.create({ name: "Test", related: r, related2: r2, related3: r3 });
-        const t2 = await TestModel.create({ name: "Test2", related: r2, related2: r3, related3: r });
+        const t = await TestModel.create({ name: "Test", related: rr, related2: rr2, related3: rr3 });
+        const t2 = await TestModel.create({ name: "Test2", related: rr2, related2: rr3, related3: rr });
 
-        const aggregated = await RelatedModel.aggregate(pipeline);
+        const aggregated = await TestModel.aggregate(pipeline);
 
         expect(aggregated).toMatchObject([
             {
                 _id: t._id,
                 __v: t.__v,
-                name: 'Test2',
+                name: 'Test',
                 related: {
-                    _id: r._id,
-                    __v: r.__v,
-                    name: "RelatedM"
+                    _id: rr._id,
+                    __v: rr.__v,
+                    name: "Related",
+                    rr: {
+                        _id: r._id,
+                        __v: r.__v,
+                        name: "RelatedM",
+                    },
+                    rr2: {
+                        _id: r2._id,
+                        __v: r2.__v,
+                        name: "RelatedM2",
+                    },
+                    rr3: {
+                        _id: r3._id,
+                        __v: r3.__v,
+                        name: "RelatedM3",
+                    },
                 },
-                related2: {
-                    _id: r2._id,
-                    __v: r2.__v,
-                    name: "RelatedM2"
-                },
-                related3: {
-                    _id: r3._id,
-                    __v: r3.__v,
-                    name: "RelatedM3"
-                }
             },
         ]);
     });

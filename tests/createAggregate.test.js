@@ -43,12 +43,12 @@ describe("Aggregate Foward", () => {
             {
                 $lookup: {
                     from: "relatedmodels",
-                    localField: "_id",
-                    foreignField: "related",
-                    as: "relatedmodels",
+                    localField: "related",
+                    foreignField: "_id",
+                    as: "related",
                 },
             },
-            { $unwind: "$relatedmodels" }, // Desaninha o array relatedmodel3
+            { $unwind: "$related" }, // Desaninha o array relatedmodel3
         ]);
     });
 });

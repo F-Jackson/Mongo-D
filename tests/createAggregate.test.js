@@ -2,6 +2,7 @@ import { describe, it, beforeEach, expect } from "vitest";
 import mongoose from "mongoose";
 import { cleanDb, disconnectDb } from "./utils.js";
 import { InitModels, Model, Schema } from "../src/index.js";
+import { GenerateFoward } from "../src/aggregateGenerator/foward.js";
 
 
 describe("Aggregate Foward", () => {
@@ -33,6 +34,9 @@ describe("Aggregate Foward", () => {
         const RelatedModel = Model(mongoose, "RelatedModel", relatedSchema);
         const TestModel = Model(mongoose, "TestModel", testSchema);
         await InitModels(client);
+
+        const generator = new GenerateFoward({}, client);
+        const pipeline = await generator.makeAggregate(TestModel);
 
         expect(client.__models).toHaveProperty("TestModel");
         expect(client.__models).toHaveProperty("RelatedModel");

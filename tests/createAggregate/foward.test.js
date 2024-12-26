@@ -1102,6 +1102,7 @@ describe("Aggregate Foward", () => {
         const t2 = await TestModel.create({ name: "Test2", related: rr2, related2: rr3, related3: rr });
 
         const aggregated = await TestModel.aggregate(pipeline);
+        //console.log(util.inspect(aggregated, { showHidden: false, depth: null, colors: true }));    
 
         expect(aggregated).toMatchObject([
             {
@@ -1116,16 +1117,25 @@ describe("Aggregate Foward", () => {
                         _id: r._id,
                         __v: r.__v,
                         name: "RelatedM",
+                        recursive: rr._id,
+                        recursive2: rr2._id,
+                        recursive3: rr3._id
                     },
                     rr2: {
                         _id: r2._id,
                         __v: r2.__v,
                         name: "RelatedM2",
+                        recursive: rr2._id,
+                        recursive2: rr3._id,
+                        recursive3: rr._id
                     },
                     rr3: {
                         _id: r3._id,
                         __v: r3.__v,
                         name: "RelatedM3",
+                        recursive: rr3._id,
+                        recursive2: rr._id,
+                        recursive3: rr2._id
                     },
                 },
             },

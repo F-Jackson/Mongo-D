@@ -344,15 +344,23 @@ describe("Aggregate Foward", () => {
     });
 
     it("should create pipeline deep 4 with diferrents fields", async () => {
+        const relatedSchema4 = new Schema(mongoose, {
+            name: { type: String, required: true },
+        });
         const relatedSchema3 = new Schema(mongoose, {
             name: { type: String, required: true },
         });
         const relatedSchema2 = new Schema(mongoose, {
             name: { type: String, required: true },
+            r4: {
+                type: mongoose.Schema.Types.ObjectId,
+                ref: "RelatedModel4",
+                required: true,
+            },
         });
         const relatedSchema = new Schema(mongoose, {
             name: { type: String, required: true },
-            rr: {
+            rr2: {
                 type: mongoose.Schema.Types.ObjectId,
                 ref: "RelatedModel2",
                 required: true,
@@ -370,13 +378,14 @@ describe("Aggregate Foward", () => {
                 ref: "RelatedModel",
                 required: true,
             },
-            related3: {
+            related2: {
                 type: mongoose.Schema.Types.ObjectId,
-                ref: "RelatedModel3",
+                ref: "RelatedModel2",
                 required: true,
             },
         });
 
+        Model(mongoose, "RelatedModel4", relatedSchema4);
         Model(mongoose, "RelatedModel3", relatedSchema3);
         Model(mongoose, "RelatedModel2", relatedSchema2);
         Model(mongoose, "RelatedModel", relatedSchema);
@@ -400,27 +409,29 @@ describe("Aggregate Foward", () => {
                         {
                             $lookup: {
                                 from: "relatedmodel2",
-                                localField: "rr",
-                                foreignField: "_id",
-                                as: "rr",
-                            },
-                        },
-                        { $unwind: "$rr" },
-                        {
-                            $lookup: {
-                                from: "relatedmodel2",
                                 localField: "rr2",
                                 foreignField: "_id",
                                 as: "rr2",
+                                pipeline: [
+                                    {
+                                        $lookup: {
+                                            from: "relatedmodel4",
+                                            localField: "r4",
+                                            foreignField: "_id",
+                                            as: "r4"
+                                        },
+                                    },
+                                    { $unwind: "$r4" },
+                                ]
                             },
                         },
                         { $unwind: "$rr2" },
                         {
                             $lookup: {
-                                from: "relatedmodel2",
+                                from: "relatedmodel3",
                                 localField: "rr3",
                                 foreignField: "_id",
-                                as: "rr3",
+                                as: "rr3"
                             },
                         },
                         { $unwind: "$rr3" },
@@ -430,80 +441,24 @@ describe("Aggregate Foward", () => {
             { $unwind: "$related" },
             {
                 $lookup: {
-                    from: "relatedmodels",
+                    from: "relatedmodel2",
                     localField: "related2",
                     foreignField: "_id",
                     as: "related2",
                     pipeline: [
                         {
                             $lookup: {
-                                from: "relatedmodel2",
-                                localField: "rr",
+                                from: "relatedmodel4",
+                                localField: "r4",
                                 foreignField: "_id",
-                                as: "rr",
+                                as: "r4"
                             },
                         },
-                        { $unwind: "$rr" },
-                        {
-                            $lookup: {
-                                from: "relatedmodel2",
-                                localField: "rr2",
-                                foreignField: "_id",
-                                as: "rr2",
-                            },
-                        },
-                        { $unwind: "$rr2" },
-                        {
-                            $lookup: {
-                                from: "relatedmodel2",
-                                localField: "rr3",
-                                foreignField: "_id",
-                                as: "rr3",
-                            },
-                        },
-                        { $unwind: "$rr3" },
+                        { $unwind: "$r4" },
                     ]
                 },
             },
             { $unwind: "$related2" },
-            {
-                $lookup: {
-                    from: "relatedmodels",
-                    localField: "related3",
-                    foreignField: "_id",
-                    as: "related3",
-                    pipeline: [
-                        {
-                            $lookup: {
-                                from: "relatedmodel2",
-                                localField: "rr",
-                                foreignField: "_id",
-                                as: "rr",
-                            },
-                        },
-                        { $unwind: "$rr" },
-                        {
-                            $lookup: {
-                                from: "relatedmodel2",
-                                localField: "rr2",
-                                foreignField: "_id",
-                                as: "rr2",
-                            },
-                        },
-                        { $unwind: "$rr2" },
-                        {
-                            $lookup: {
-                                from: "relatedmodel2",
-                                localField: "rr3",
-                                foreignField: "_id",
-                                as: "rr3",
-                            },
-                        },
-                        { $unwind: "$rr3" },
-                    ]
-                },
-            },
-            { $unwind: "$related3" },
         ]);
     });
 });

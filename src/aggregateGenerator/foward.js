@@ -13,8 +13,10 @@ export class GenerateFoward {
         this.maxDeep--;
 
         if (this.maxDeep < 0) throw new Error("Exceded max deep");
-    
-        for (const [modelName, values] of Object.entries(mongoModel._FKS)) {
+        const modelEntries = Object.entries(mongoModel._FKS);
+
+        for (let i = 0; i < modelEntries.length; i++) {
+            const [modelName, values] = modelEntries[i];
             const model = this.mongoD.__models[modelName];
             if (!model && !this.stop) break;
 
@@ -25,9 +27,16 @@ export class GenerateFoward {
                 break;
             }
 
-            if (!alreadyFound) alreadyFound = [];
-            if (alreadyFound.includes(modelName)) break;
-            alreadyFound.push(modelName);
+            let alreadyEntries;
+
+            if (i === 0) {
+                alreadyEntries = alreadyFound;
+            } else {
+                alreadyEntries = [...alreadyFound];
+            }
+
+            if (alreadyEntries.includes(modelName)) break;
+            alreadyEntries.push(modelName);
 
             for (const value of values) {
                 const path = value.path.join(".");
@@ -47,7 +56,7 @@ export class GenerateFoward {
                 ];
     
                 if (model._FKS) {
-                    const nestedEntries = await this._aggregate(model, alreadyFound);
+                    const nestedEntries = await this._aggregate(model, alreadyEntries);
                     if (nestedEntries.length > 0) {
                         entry[0]["$lookup"].pipeline = nestedEntries;
                     }
@@ -61,6 +70,8 @@ export class GenerateFoward {
     }
 
     async makeAggregate(mongoModel) {
-        return await this._aggregate(mongoModel);
+        const alreadyFound = [];
+
+        return await this._aggregate(mongoModel, alreadyFound);
     }
 }

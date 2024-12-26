@@ -84,7 +84,6 @@ describe("Aggregate Foward", () => {
             bruteForce: false
         }}, client);
         const pipeline = await generator.makeAggregate(TestModel);
-        console.log(util.inspect(pipeline, { showHidden: false, depth: null, colors: true }));
 
         expect(pipeline).toMatchObject([
             {
@@ -107,6 +106,70 @@ describe("Aggregate Foward", () => {
                 },
             },
             { $unwind: "$related" },
+        ]);
+    });
+
+    it("should create pipeline deep 1 triple", async () => {
+        const relatedSchema = new Schema(mongoose, {
+            name: { type: String, required: true },
+        });
+        const testSchema = new Schema(mongoose, {
+            title: { type: String, required: true },
+            related: {
+                type: mongoose.Schema.Types.ObjectId,
+                ref: "RelatedModel",
+                required: true,
+            },
+            related2: {
+                type: mongoose.Schema.Types.ObjectId,
+                ref: "RelatedModel",
+                required: true,
+            },
+            related3: {
+                type: mongoose.Schema.Types.ObjectId,
+                ref: "RelatedModel",
+                required: true,
+            },
+        });
+
+        const RelatedModel = Model(mongoose, "RelatedModel", relatedSchema);
+        const TestModel = Model(mongoose, "TestModel", testSchema);
+        await InitModels(client);
+
+        const generator = new GenerateFoward({ stop: {
+            collection: "",
+            bruteForce: false
+        }}, client);
+        const pipeline = await generator.makeAggregate(TestModel);
+
+        expect(pipeline).toMatchObject([
+            {
+                $lookup: {
+                    from: "relatedmodels",
+                    localField: "related",
+                    foreignField: "_id",
+                    as: "related",
+                },
+            },
+            { $unwind: "$related" },
+            {
+                $lookup: {
+                    from: "relatedmodels",
+                    localField: "related2",
+                    foreignField: "_id",
+                    as: "related2",
+                },
+            },
+            { $unwind: "$related2" },
+            {
+                $lookup: {
+                    from: "relatedmodels",
+                    localField: "related3",
+                    foreignField: "_id",
+                    as: "related3",
+                },
+            },
+            { $unwind: "$related3" },
         ]);
     });
 });

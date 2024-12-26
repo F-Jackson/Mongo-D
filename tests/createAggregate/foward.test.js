@@ -334,8 +334,8 @@ describe("Aggregate Foward", () => {
             },
         });
 
-        Model(mongoose, "RelatedModel2", relatedSchema2);
-        Model(mongoose, "RelatedModel", relatedSchema);
+        const RelatedModel2 = Model(mongoose, "RelatedModel2", relatedSchema2);
+        const RelatedModel = Model(mongoose, "RelatedModel", relatedSchema);
         const TestModel = Model(mongoose, "TestModel", testSchema);
         await InitModels(client);
 
@@ -460,6 +460,152 @@ describe("Aggregate Foward", () => {
                 },
             },
             { $unwind: "$related3" },
+        ]);
+
+        const r = await RelatedModel2.create({ name: "Related" });
+        const r2 = await RelatedModel2.create({ name: "Related2" });
+        const r3 = await RelatedModel2.create({ name: "Related3" });
+
+        const rb = await RelatedModel.create({ name: "Related", r: r, r2: r2, r3: r3 });
+        const rb2 = await RelatedModel.create({ name: "Related2", r: r, r2: r3, r3: r2 });
+        const rb3 = await RelatedModel.create({ name: "Related3", r: r3, r2: r, r3: r2 });
+
+        const t = await TestModel.create({ name: "Test", related: rb, related2: rb2, related3: rb3 });
+        const t2 = await TestModel.create({ name: "Test2", related: rb3, related2: rb, related3: rb2 });
+
+        const aggregated = await TestModel.aggregate(pipeline);
+
+        expect(aggregated).toMatchObject([
+            {
+                _id: t._id,
+                __v: t.__v,
+                name: 'Test',
+                related: {
+                    _id: rb._id,
+                    __v: rb.__v,
+                    name: "Related",
+                    rr: {
+                        _id: r._id,
+                        __v: r.__v,
+                        name: "Related",
+                    },
+                    rr2: {
+                        _id: r2._id,
+                        __v: r2.__v,
+                        name: "Related2",
+                    },
+                    rr3: {
+                        _id: r3._id,
+                        __v: r3.__v,
+                        name: "Related3",
+                    }
+                },
+                related2: {
+                    _id: rb2._id,
+                    __v: rb2.__v,
+                    name: "Related2",
+                    rr: {
+                        _id: r._id,
+                        __v: r.__v,
+                        name: "Related",
+                    },
+                    rr2: {
+                        _id: r3._id,
+                        __v: r3.__v,
+                        name: "Related3",
+                    },
+                    rr3: {
+                        _id: r2._id,
+                        __v: r2.__v,
+                        name: "Related2",
+                    }
+                },
+                related3: {
+                    _id: rb3._id,
+                    __v: rb3.__v,
+                    name: "Related3",
+                    rr: {
+                        _id: r3._id,
+                        __v: r3.__v,
+                        name: "Related3",
+                    },
+                    rr2: {
+                        _id: r._id,
+                        __v: r.__v,
+                        name: "Related",
+                    },
+                    rr3: {
+                        _id: r2._id,
+                        __v: r2.__v,
+                        name: "Related2",
+                    }
+                },
+            },
+            {
+                _id: t2._id,
+                __v: t2.__v,
+                name: 'Test2',
+                related: {
+                    _id: rb3._id,
+                    __v: rb3.__v,
+                    name: "Related3",
+                    rr: {
+                        _id: r3._id,
+                        __v: r3.__v,
+                        name: "Related3",
+                    },
+                    rr2: {
+                        _id: r._id,
+                        __v: r.__v,
+                        name: "Related",
+                    },
+                    rr3: {
+                        _id: r2._id,
+                        __v: r2.__v,
+                        name: "Related2",
+                    }
+                },
+                related2: {
+                    _id: rb._id,
+                    __v: rb.__v,
+                    name: "Related",
+                    rr: {
+                        _id: r._id,
+                        __v: r.__v,
+                        name: "Related",
+                    },
+                    rr2: {
+                        _id: r2._id,
+                        __v: r2.__v,
+                        name: "Related2",
+                    },
+                    rr3: {
+                        _id: r3._id,
+                        __v: r3.__v,
+                        name: "Related3",
+                    }
+                },
+                related3: {
+                    _id: rb2._id,
+                    __v: rb2.__v,
+                    name: "Related2",
+                    rr: {
+                        _id: r._id,
+                        __v: r.__v,
+                        name: "Related",
+                    },
+                    rr2: {
+                        _id: r3._id,
+                        __v: r3.__v,
+                        name: "Related3",
+                    },
+                    rr3: {
+                        _id: r2._id,
+                        __v: r2.__v,
+                        name: "Related2",
+                    }
+                },
+            },
         ]);
     });
 

@@ -398,8 +398,6 @@ describe("Aggregate Foward", () => {
         }}, client);
         const pipeline = await generator.makeAggregate(TestModel);
 
-        console.log(util.inspect(pipeline, { showHidden: false, depth: null, colors: true }));
-
         expect(pipeline).toMatchObject([
             {
                 $lookup: {
@@ -499,6 +497,130 @@ describe("Aggregate Foward", () => {
                     localField: "related2",
                     foreignField: "_id",
                     as: "related2",
+                },
+            },
+            { $unwind: "$related2" },
+        ]);
+    });
+
+    it("should create pipeline deep 4 with diferrents fields away recursive", async () => {
+        const relatedSchema4 = new Schema(mongoose, {
+            name: { type: String, required: true },
+            r2: {
+                type: mongoose.Schema.Types.ObjectId,
+                ref: "RelatedModel2",
+                required: true,
+            },
+        });
+        const relatedSchema3 = new Schema(mongoose, {
+            name: { type: String, required: true },
+        });
+        const relatedSchema2 = new Schema(mongoose, {
+            name: { type: String, required: true },
+            r4: {
+                type: mongoose.Schema.Types.ObjectId,
+                ref: "RelatedModel4",
+                required: true,
+            },
+        });
+        const relatedSchema = new Schema(mongoose, {
+            name: { type: String, required: true },
+            rr2: {
+                type: mongoose.Schema.Types.ObjectId,
+                ref: "RelatedModel2",
+                required: true,
+            },
+            rr3: {
+                type: mongoose.Schema.Types.ObjectId,
+                ref: "RelatedModel3",
+                required: true,
+            },
+        });
+        const testSchema = new Schema(mongoose, {
+            title: { type: String, required: true },
+            related: {
+                type: mongoose.Schema.Types.ObjectId,
+                ref: "RelatedModel",
+                required: true,
+            },
+            related2: {
+                type: mongoose.Schema.Types.ObjectId,
+                ref: "RelatedModel2",
+                required: true,
+            },
+        });
+
+        Model(mongoose, "RelatedModel4", relatedSchema4);
+        Model(mongoose, "RelatedModel3", relatedSchema3);
+        Model(mongoose, "RelatedModel2", relatedSchema2);
+        Model(mongoose, "RelatedModel", relatedSchema);
+        const TestModel = Model(mongoose, "TestModel", testSchema);
+        await InitModels(client);
+
+        const generator = new GenerateFoward({ stop: {
+            collection: "",
+            bruteForce: false
+        }}, client);
+        const pipeline = await generator.makeAggregate(TestModel);
+
+        expect(pipeline).toMatchObject([
+            {
+                $lookup: {
+                    from: "relatedmodels",
+                    localField: "related",
+                    foreignField: "_id",
+                    as: "related",
+                    pipeline: [
+                        {
+                            $lookup: {
+                                from: "relatedmodel2",
+                                localField: "rr2",
+                                foreignField: "_id",
+                                as: "rr2",
+                                pipeline: [
+                                    {
+                                        $lookup: {
+                                            from: "relatedmodel4",
+                                            localField: "r4",
+                                            foreignField: "_id",
+                                            as: "r4"
+                                        },
+                                    },
+                                    { $unwind: "$r4" },
+                                ]
+                            },
+                        },
+                        { $unwind: "$rr2" },
+                        {
+                            $lookup: {
+                                from: "relatedmodel3",
+                                localField: "rr3",
+                                foreignField: "_id",
+                                as: "rr3"
+                            },
+                        },
+                        { $unwind: "$rr3" },
+                    ]
+                },
+            },
+            { $unwind: "$related" },
+            {
+                $lookup: {
+                    from: "relatedmodel2",
+                    localField: "related2",
+                    foreignField: "_id",
+                    as: "related2",
+                    pipeline: [
+                        {
+                            $lookup: {
+                                from: "relatedmodel4",
+                                localField: "r4",
+                                foreignField: "_id",
+                                as: "r4"
+                            },
+                        },
+                        { $unwind: "$r4" },
+                    ]
                 },
             },
             { $unwind: "$related2" },

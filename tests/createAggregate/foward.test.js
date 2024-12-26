@@ -865,20 +865,30 @@ describe("Aggregate Foward", () => {
                 _id: rr._id,
                 __v: rr.__v,
                 name: 'Related',
-                related: {
+                related2: {
                     _id: r._id,
                     __v: r.__v,
                     name: "RelatedM",
+                    related: {
+                        _id: rr._id,
+                        __v: rr.__v,
+                        name: "Related",
+                    }
                 }
             },
             {
                 _id: rr2._id,
                 __v: rr2.__v,
                 name: 'Related2',
-                related: {
+                related2: {
                     _id: r._id,
                     __v: r.__v,
                     name: "RelatedM",
+                    related: {
+                        _id: rr._id,
+                        __v: rr.__v,
+                        name: "Related",
+                    }
                 }
             }
         ]);

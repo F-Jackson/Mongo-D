@@ -900,17 +900,14 @@ describe("Aggregate Foward", () => {
             recursive: {
                 type: mongoose.Schema.Types.ObjectId,
                 ref: "RelatedModel",
-                required: true,
             },
             recursive2: {
                 type: mongoose.Schema.Types.ObjectId,
                 ref: "RelatedModel",
-                required: true,
             },
             recursive3: {
                 type: mongoose.Schema.Types.ObjectId,
                 ref: "RelatedModel",
-                required: true,
             },
         });
         const relatedSchema = new Schema(mongoose, {
@@ -932,7 +929,7 @@ describe("Aggregate Foward", () => {
             },
         });
         const testSchema = new Schema(mongoose, {
-            title: { type: String, required: true },
+            name: { type: String, required: true },
             related: {
                 type: mongoose.Schema.Types.ObjectId,
                 ref: "RelatedModel",
@@ -950,8 +947,8 @@ describe("Aggregate Foward", () => {
             },
         });
 
-        Model(mongoose, "RelatedModel2", relatedSchema2);
-        Model(mongoose, "RelatedModel", relatedSchema);
+        const RelatedModel2 = Model(mongoose, "RelatedModel2", relatedSchema2);
+        const RelatedModel = Model(mongoose, "RelatedModel", relatedSchema);
         const TestModel = Model(mongoose, "TestModel", testSchema);
         await InitModels(client);
 
@@ -1076,6 +1073,57 @@ describe("Aggregate Foward", () => {
                 },
             },
             { $unwind: "$related3" },
+        ]);
+
+        const r = await RelatedModel2.create({ name: "RelatedM" });
+        const r2 = await RelatedModel2.create({ name: "RelatedM2" });
+        const r3 = await RelatedModel2.create({ name: "RelatedM3" });
+
+        const rr = await RelatedModel.create({ name: "Related", rr: r, rr2: r2, rr3: r3 });
+        const rr2 = await RelatedModel.create({ name: "Related2", rr: r3, rr2: r, rr3: r2 });
+        const rr3 = await RelatedModel.create({ name: "Related2", rr: r2, rr2: r3, rr3: r });
+
+        r.recursive = rr;
+        r.recursive2 = rr2;
+        r.recursive3 = rr3;
+        await r.save();
+
+        r2.recursive = rr2;
+        r2.recursive2 = rr3;
+        r2.recursive3 = rr;
+        await r2.save();
+
+        r3.recursive = rr3;
+        r3.recursive2 = rr;
+        r3.recursive3 = rr2;
+        await r3.save();
+
+        const t = await TestModel.create({ name: "Test", related: r, related2: r2, related3: r3 });
+        const t2 = await TestModel.create({ name: "Test2", related: r2, related2: r3, related3: r });
+
+        const aggregated = await RelatedModel.aggregate(pipeline);
+
+        expect(aggregated).toMatchObject([
+            {
+                _id: t._id,
+                __v: t.__v,
+                name: 'Test2',
+                related: {
+                    _id: r._id,
+                    __v: r.__v,
+                    name: "RelatedM"
+                },
+                related2: {
+                    _id: r2._id,
+                    __v: r2.__v,
+                    name: "RelatedM2"
+                },
+                related3: {
+                    _id: r3._id,
+                    __v: r3.__v,
+                    name: "RelatedM3"
+                }
+            },
         ]);
     });
 

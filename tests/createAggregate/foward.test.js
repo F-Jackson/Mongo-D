@@ -316,7 +316,7 @@ describe("Aggregate Foward", () => {
             },
         });
         const testSchema = new Schema(mongoose, {
-            title: { type: String, required: true },
+            name: { type: String, required: true },
             related: {
                 type: mongoose.Schema.Types.ObjectId,
                 ref: "RelatedModel",
@@ -466,9 +466,9 @@ describe("Aggregate Foward", () => {
         const r2 = await RelatedModel2.create({ name: "Related2" });
         const r3 = await RelatedModel2.create({ name: "Related3" });
 
-        const rb = await RelatedModel.create({ name: "Related", r: r, r2: r2, r3: r3 });
-        const rb2 = await RelatedModel.create({ name: "Related2", r: r, r2: r3, r3: r2 });
-        const rb3 = await RelatedModel.create({ name: "Related3", r: r3, r2: r, r3: r2 });
+        const rb = await RelatedModel.create({ name: "Related", rr: r, rr2: r2, rr3: r3 });
+        const rb2 = await RelatedModel.create({ name: "Related2", rr: r, rr2: r3, rr3: r2 });
+        const rb3 = await RelatedModel.create({ name: "Related3", rr: r3, rr2: r, rr3: r2 });
 
         const t = await TestModel.create({ name: "Test", related: rb, related2: rb2, related3: rb3 });
         const t2 = await TestModel.create({ name: "Test2", related: rb3, related2: rb, related3: rb2 });

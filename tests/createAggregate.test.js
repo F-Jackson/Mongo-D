@@ -6,31 +6,29 @@ import { GenerateFoward } from "../src/aggregateGenerator/foward.js";
 
 
 describe("Aggregate Foward", () => {
-    let testSchema;
-    let relatedSchema;
     let client;
 
     beforeEach(async () => {
         client = await cleanDb();
-
-        relatedSchema = new Schema(mongoose, {
-            title: { type: String, required: true },
-        });
-        testSchema = new Schema(mongoose, {
-            name: { type: String, required: true },
-            related: {
-                type: mongoose.Schema.Types.ObjectId,
-                ref: "RelatedModel",
-                required: true,
-            },
-        });
     });
 
     afterEach(async () => {
         await disconnectDb(client);
     });
 
-    it("should create pipeline", async () => {
+    it("should create pipeline deep 1", async () => {
+        const testSchema = new Schema(mongoose, {
+            title: { type: String, required: true },
+        });
+        const relatedSchema = new Schema(mongoose, {
+            name: { type: String, required: true },
+            related: {
+                type: mongoose.Schema.Types.ObjectId,
+                ref: "RelatedModel",
+                required: true,
+            },
+        });;
+
         const RelatedModel = Model(mongoose, "RelatedModel", relatedSchema);
         const TestModel = Model(mongoose, "TestModel", testSchema);
         await InitModels(client);
@@ -38,20 +36,16 @@ describe("Aggregate Foward", () => {
         const generator = new GenerateFoward({}, client);
         const pipeline = await generator.makeAggregate(TestModel);
 
-        expect(client.__models).toHaveProperty("TestModel");
-        expect(client.__models).toHaveProperty("RelatedModel");
-
-        expect(Object.entries(TestModel._FKS)).toHaveLength(1);
-        expect(TestModel._FKS).toMatchObject({
-            "RelatedModel": [
-                {
-                    path: ["related"],
-                    required: true,
-                    immutable: false,
-                    unique: false,
-                    array: false,
-                }
-            ]
-        });
+        expect(pipeline).toMatchObject([
+            {
+                $lookup: {
+                    from: "relatedmodels",
+                    localField: "_id",
+                    foreignField: "related",
+                    as: "relatedmodels",
+                },
+            },
+            { $unwind: "$relatedmodels" }, // Desaninha o array relatedmodel3
+        ]);
     });
 });

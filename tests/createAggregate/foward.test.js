@@ -823,11 +823,10 @@ describe("Aggregate Foward", () => {
             },
         });
         const relatedSchema2 = new Schema(mongoose, {
-            title: { type: String, required: true },
+            name: { type: String, required: true },
             related: {
                 type: mongoose.Schema.Types.ObjectId,
-                ref: "RelatedModel",
-                required: true,
+                ref: "RelatedModel"
             },
         });
 
@@ -851,6 +850,37 @@ describe("Aggregate Foward", () => {
                 },
             },
             { $unwind: "$related2" },
+        ]);
+
+        const r = await RelatedModel2.create({ name: "RelatedM" });
+        const rr = await RelatedModel.create({ name: "Related", related2: r });
+        const rr2 = await RelatedModel.create({ name: "Related2", related2: r });
+        r.related = rr;
+        await r.save();
+
+        const aggregated = await RelatedModel.aggregate(pipeline);
+
+        expect(aggregated).toMatchObject([
+            {
+                _id: rr._id,
+                __v: rr.__v,
+                name: 'Related',
+                related: {
+                    _id: r._id,
+                    __v: r.__v,
+                    name: "RelatedM",
+                }
+            },
+            {
+                _id: rr2._id,
+                __v: rr2.__v,
+                name: 'Related2',
+                related: {
+                    _id: r._id,
+                    __v: r.__v,
+                    name: "RelatedM",
+                }
+            }
         ]);
     });
 

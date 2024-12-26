@@ -1081,7 +1081,7 @@ describe("Aggregate Foward", () => {
 
         const rr = await RelatedModel.create({ name: "Related", rr: r, rr2: r2, rr3: r3 });
         const rr2 = await RelatedModel.create({ name: "Related2", rr: r3, rr2: r, rr3: r2 });
-        const rr3 = await RelatedModel.create({ name: "Related2", rr: r2, rr2: r3, rr3: r });
+        const rr3 = await RelatedModel.create({ name: "Related3", rr: r2, rr2: r3, rr3: r });
 
         r.recursive = rr;
         r.recursive2 = rr2;
@@ -1172,20 +1172,20 @@ describe("Aggregate Foward", () => {
                     __v: rr3.__v,
                     name: "Related3",
                     rr: {
-                        _id: r3._id,
-                        __v: r3.__v,
-                        name: "RelatedM3",
-                        recursive: rr3._id,
-                        recursive2: rr._id,
-                        recursive3: rr2._id
-                    },
-                    rr2: {
                         _id: r2._id,
                         __v: r2.__v,
                         name: "RelatedM2",
                         recursive: rr2._id,
                         recursive2: rr3._id,
                         recursive3: rr._id
+                    },
+                    rr2: {
+                        _id: r3._id,
+                        __v: r3.__v,
+                        name: "RelatedM3",
+                        recursive: rr3._id,
+                        recursive2: rr._id,
+                        recursive3: rr2._id
                     },
                     rr3: {
                         _id: r._id,

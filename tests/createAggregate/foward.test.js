@@ -1197,6 +1197,98 @@ describe("Aggregate Foward", () => {
                     },
                 }
             },
+            {
+                _id: t2._id,
+                __v: t2.__v,
+                name: 'Test2',
+                related: {
+                    _id: rr2._id,
+                    __v: rr2.__v,
+                    name: "Related2",
+                    rr: {
+                        _id: r3._id,
+                        __v: r3.__v,
+                        name: "RelatedM3",
+                        recursive: rr3._id,
+                        recursive2: rr._id,
+                        recursive3: rr2._id
+                    },
+                    rr2: {
+                        _id: r._id,
+                        __v: r.__v,
+                        name: "RelatedM",
+                        recursive: rr._id,
+                        recursive2: rr2._id,
+                        recursive3: rr3._id
+                    },
+                    rr3: {
+                        _id: r2._id,
+                        __v: r2.__v,
+                        name: "RelatedM2",
+                        recursive: rr2._id,
+                        recursive2: rr3._id,
+                        recursive3: rr._id
+                    },
+                },
+                related2: {
+                    _id: rr3._id,
+                    __v: rr3.__v,
+                    name: "Related3",
+                    rr: {
+                        _id: r2._id,
+                        __v: r2.__v,
+                        name: "RelatedM2",
+                        recursive: rr2._id,
+                        recursive2: rr3._id,
+                        recursive3: rr._id
+                    },
+                    rr2: {
+                        _id: r3._id,
+                        __v: r3.__v,
+                        name: "RelatedM3",
+                        recursive: rr3._id,
+                        recursive2: rr._id,
+                        recursive3: rr2._id
+                    },
+                    rr3: {
+                        _id: r._id,
+                        __v: r.__v,
+                        name: "RelatedM",
+                        recursive: rr._id,
+                        recursive2: rr2._id,
+                        recursive3: rr3._id
+                    },
+                },
+                related3: {
+                    _id: rr._id,
+                    __v: rr.__v,
+                    name: "Related",
+                    rr: {
+                        _id: r._id,
+                        __v: r.__v,
+                        name: "RelatedM",
+                        recursive: rr._id,
+                        recursive2: rr2._id,
+                        recursive3: rr3._id
+                    },
+                    rr2: {
+                        _id: r2._id,
+                        __v: r2.__v,
+                        name: "RelatedM2",
+                        recursive: rr2._id,
+                        recursive2: rr3._id,
+                        recursive3: rr._id
+                    },
+                    rr3: {
+                        _id: r3._id,
+                        __v: r3.__v,
+                        name: "RelatedM3",
+                        recursive: rr3._id,
+                        recursive2: rr._id,
+                        recursive3: rr2._id
+                    },
+                }
+            },
         ]);
     });
 

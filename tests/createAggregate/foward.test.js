@@ -3,7 +3,6 @@ import mongoose from "mongoose";
 import { cleanDb, disconnectDb } from "../utils.js";
 import { InitModels, Model, Schema } from "../../src/index.js";
 import { GenerateFoward } from "../../src/aggregateGenerator/foward.js";
-const util = require('util');
 
 
 describe("Aggregate Foward", () => {

@@ -73,7 +73,7 @@ export class GenerateBack {
         ];
     }
 
-    async _processRelations(model, projectedFields, addFields, parentField = "") {
+    async _aggregate(model, projectedFields, addFields, parentField = "") {
         if (!this.mongoD.__relations[model.modelName]) return [];
         if (this.maxDepth-- < 0) throw new Error("Exceeded maximum depth");
 
@@ -107,7 +107,7 @@ export class GenerateBack {
 
             if (this.mongoD.__relations[relatedModelName]) {
                 const nestedFields = this._createAddFieldEntry(relatedModelName, addFields);
-                const nestedPipeline = await this._processRelations(
+                const nestedPipeline = await this._aggregate(
                     relatedModel,
                     projectedFields,
                     nestedFields,
@@ -130,13 +130,13 @@ export class GenerateBack {
         return this.stop;
     }
 
-    async generatePipeline(model) {
+    async makeAggregate(model) {
         if (!model) throw new Error("A valid MongoDB model must be provided");
 
         const projectedFields = new Set();
         const addFields = [];
 
-        const relationsPipeline = await this._processRelations(
+        const relationsPipeline = await this._aggregate(
             model,
             projectedFields,
             addFields

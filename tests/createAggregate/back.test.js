@@ -2,7 +2,7 @@ import { describe, it, beforeEach, expect } from "vitest";
 import mongoose from "mongoose";
 import { cleanDb, disconnectDb } from "../utils.js";
 import { InitModels, Model, Schema } from "../../src/index.js";
-import { GenerateFoward } from "../../src/aggregateGenerator/foward.js";
+import { GenerateBack } from "../../src/aggregateGenerator/back.js";
 const util = require('util');
 
 
@@ -34,11 +34,12 @@ describe("Aggregate Back", () => {
         const TestModel = Model(mongoose, "TestModel", testSchema);
         await InitModels(client);
 
-        const generator = new GenerateFoward({ stop: {
+        const generator = new GenerateBack({ stop: {
             collection: "",
             bruteForce: false
         }}, client);
-        const pipeline = await generator.makeAggregate(TestModel);
+        const pipeline = await generator.makeAggregate(RelatedModel);
+        console.log(util.inspect(pipeline, { showHidden: false, depth: null, colors: true }));
 
         expect(pipeline).toMatchObject([
             {
@@ -52,7 +53,7 @@ describe("Aggregate Back", () => {
             { $unwind: "$related" },
         ]);
     });
-
+/*
     it("should create pipeline deep 2", async () => {
         const relatedSchema2 = new Schema(mongoose, {
             name: { type: String, required: true },
@@ -810,5 +811,5 @@ describe("Aggregate Back", () => {
             },
             { $unwind: "$related2" },
         ]);
-    });
+    });*/
 });

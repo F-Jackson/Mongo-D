@@ -73,6 +73,7 @@ describe("Aggregate Back", () => {
         const t2 = await TestModel.create({ name: "Test2", related: r });
 
         const aggregated = await RelatedModel.aggregate(pipeline);
+        console.log(aggregated[0]["__relatedTo__"]);
 
         expect(aggregated).toMatchObject([
             {
@@ -83,7 +84,7 @@ describe("Aggregate Back", () => {
             }
         ]);
     });
-/*
+
     it("should create pipeline deep 2", async () => {
         const relatedSchema2 = new Schema(mongoose, {
             name: { type: String, required: true },
@@ -97,7 +98,7 @@ describe("Aggregate Back", () => {
             },
         });
         const testSchema = new Schema(mongoose, {
-            title: { type: String, required: true },
+            name: { type: String, required: true },
             related: {
                 type: mongoose.Schema.Types.ObjectId,
                 ref: "RelatedModel",
@@ -105,41 +106,85 @@ describe("Aggregate Back", () => {
             },
         });
 
-        Model(mongoose, "RelatedModel2", relatedSchema2);
-        Model(mongoose, "RelatedModel", relatedSchema);
+        const RelatedModel2 = Model(mongoose, "RelatedModel2", relatedSchema2);
+        const RelatedModel = Model(mongoose, "RelatedModel", relatedSchema);
         const TestModel = Model(mongoose, "TestModel", testSchema);
         await InitModels(client);
 
-        const generator = new GenerateFoward({ stop: {
+        const generator = new GenerateBack({ stop: {
             collection: "",
             bruteForce: false
         }}, client);
-        const pipeline = await generator.makeAggregate(TestModel);
+        const pipeline = await generator.makeAggregate(RelatedModel2);
 
         expect(pipeline).toMatchObject([
             {
-                $lookup: {
-                    from: "relatedmodels",
-                    localField: "related",
-                    foreignField: "_id",
-                    as: "related",
-                    pipeline: [
-                        {
-                            $lookup: {
-                                from: "relatedmodel2",
-                                localField: "related2",
-                                foreignField: "_id",
-                                as: "related2",
-                            },
-                        },
-                        { $unwind: "$related2" },
-                    ]
-                },
+                '$lookup': {
+                    from: 'relatedmodels',
+                    localField: '_id',
+                    foreignField: 'related2',
+                    as: 'relatedmodels'
+                }
             },
-            { $unwind: "$related" },
+            { '$unwind': '$relatedmodels' },
+            {
+                '$lookup': {
+                    from: 'testmodels',
+                    localField: 'relatedmodels._id',
+                    foreignField: 'related',
+                    as: 'testmodels'
+                }
+            },
+            { '$unwind': '$testmodels' },            
+            {
+                '$addFields': { 
+                    __relatedTo__: [ 
+                        {  
+                            '_$_RelatedModel': {
+                                '$mergeObjects': [ 
+                                    '$RelatedModel', 
+                                    { '_$_TestModel': 'testmodels' } 
+                                ]
+                            }                    
+                        } 
+                    ] 
+                }
+            },
+            { 
+                '$project': { relatedmodels: 0, testmodels: 0  } 
+            },
+            { '$group': { 
+                    _id: '$_id', 
+                    uniqueDocument: { '$first': '$$ROOT' } 
+                }
+            },
+            { '$replaceRoot': { newRoot: '$uniqueDocument' } }
+        ]);
+
+        const rb = await RelatedModel2.create({ name: "Related" });
+        const rb2 = await RelatedModel2.create({ name: "Related" });
+
+        const r = await RelatedModel.create({ name: "Related", related2: rb });
+        const r2 = await RelatedModel.create({ name: "Related", related2: rb2 });
+
+        const t = await TestModel.create({ name: "Test", related: r });
+        const t2 = await TestModel.create({ name: "Test2", related: r2 });
+
+        const aggregated = await RelatedModel2.aggregate(pipeline);
+
+        console.log(util.inspect(aggregated, { showHidden: false, depth: null, colors: true }));
+
+        expect(aggregated).toMatchObject([
+            {
+                _id: r._id,
+                name: 'Related',
+                __v: 0,
+                __relatedTo__: [ { '_$_TestModel': 'testmodels' } ]
+            }
         ]);
     });
 
+    /*
     it("should create pipeline deep 1 triple", async () => {
         const relatedSchema = new Schema(mongoose, {
             name: { type: String, required: true },

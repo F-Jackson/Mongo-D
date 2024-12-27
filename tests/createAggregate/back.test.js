@@ -39,18 +39,48 @@ describe("Aggregate Back", () => {
             bruteForce: false
         }}, client);
         const pipeline = await generator.makeAggregate(RelatedModel);
-        console.log(util.inspect(pipeline, { showHidden: false, depth: null, colors: true }));
 
         expect(pipeline).toMatchObject([
             {
-                $lookup: {
-                    from: "relatedmodels",
-                    localField: "related",
-                    foreignField: "_id",
-                    as: "related",
-                },
+                '$lookup': {
+                    from: 'testmodels',
+                    localField: '_id',
+                    foreignField: 'related',
+                    as: 'testmodels'
+                }
             },
-            { $unwind: "$related" },
+            { '$unwind': '$testmodels' },
+            {
+                '$addFields': { 
+                    __relatedTo__: [ 
+                        { '_$_TestModel': 'testmodels' } 
+                    ] 
+                }
+            },
+            { 
+                '$project': { testmodels: 0 } 
+            },
+            { '$group': { 
+                    _id: '$_id', 
+                    uniqueDocument: { '$first': '$$ROOT' } 
+                }
+            },
+            { '$replaceRoot': { newRoot: '$uniqueDocument' } }
+        ]);
+
+        const r = await RelatedModel.create({ name: "Related" });
+        const t = await TestModel.create({ name: "Test", related: r });
+        const t2 = await TestModel.create({ name: "Test2", related: r });
+
+        const aggregated = await RelatedModel.aggregate(pipeline);
+
+        expect(aggregated).toMatchObject([
+            {
+                _id: r._id,
+                name: 'Related',
+                __v: 0,
+                __relatedTo__: [ { '_$_TestModel': 'testmodels' } ]
+            }
         ]);
     });
 /*
